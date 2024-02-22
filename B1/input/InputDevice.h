@@ -111,9 +111,12 @@ protected:
 		int Y;
 	};
 
+public:
 	void OnKeyDown(KeyboardInputEventArgs args);
 	void OnMouseMove(RawMouseEventArgs args);
 };
+
+extern InputDevice* inpDevice;
 
 /*
 		case WM_INPUT:

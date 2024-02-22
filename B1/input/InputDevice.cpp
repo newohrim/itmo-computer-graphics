@@ -9,6 +9,9 @@
 using namespace DirectX::SimpleMath;
 
 
+InputDevice* inpDevice = nullptr;
+
+
 InputDevice::InputDevice(Game* inGame) : game(inGame)
 {
 	keys = new std::unordered_set<Keys>();

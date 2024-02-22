@@ -18,6 +18,8 @@
 #include "render/DrawComponent.h"
 #include "components/TriangleComponent.h"
 
+#include "input/InputDevice.h"
+
 #ifdef _WIN32
 #include "os/wnd.h"
 #endif
@@ -38,6 +40,8 @@ bool Game::Initialize(const std::string name, int windowWidth, int windowHeight)
 	}
 
 	LoadData();
+
+	inpDevice = new InputDevice(this);
 
 	prevTime = std::chrono::steady_clock::now();
 
@@ -61,6 +65,7 @@ void Game::ProcessInput()
 
 void Game::Shutdown()
 {
+	delete(inpDevice);
 }
 
 void Game::RunLoop()
