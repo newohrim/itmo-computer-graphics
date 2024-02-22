@@ -65,6 +65,7 @@ void Game::ProcessInput()
 
 void Game::Shutdown()
 {
+	UnloadData();
 	delete(inpDevice);
 }
 
@@ -143,6 +144,14 @@ void Game::LoadData()
 	triF->SetVerts(vertsF, sizeof(float) * std::size(vertsF));
 	triF->SetShader(renderer->GetUtils()->GetQuadShader(renderer.get()));
 #endif
+}
+
+void Game::UnloadData()
+{
+	while (!components.empty())
+	{
+		delete components.back();
+	}
 }
 
 void Game::UpdateGame()

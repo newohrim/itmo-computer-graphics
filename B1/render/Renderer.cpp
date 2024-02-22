@@ -83,7 +83,14 @@ bool Renderer::Initialize(Window* _window)
 
 void Renderer::Shutdown()
 {
+	UnloadData();
 	utils.reset();
+	// TODO: code d3d11 termination logic here
+}
+
+void Renderer::UnloadData()
+{
+	components.clear();
 }
 
 void Renderer::Draw()

@@ -19,7 +19,7 @@ class Renderer {
 public:
 	bool Initialize(Window* window);
 	void Shutdown();
-	//void UnloadData();
+	void UnloadData();
 
 	void Draw();
 

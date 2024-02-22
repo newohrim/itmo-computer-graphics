@@ -22,6 +22,7 @@ public:
 	void RunLoop();
 
 	void LoadData();
+	void UnloadData();
 	void UpdateGame();
 	void GenerateOutput();
 
