@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="components\CompositeComponent.cpp" />
     <ClCompile Include="core\Component.cpp" />
     <ClCompile Include="core\Game.cpp" />
     <ClCompile Include="input\InputDevice.cpp" />
@@ -151,11 +152,13 @@
     <ClCompile Include="render\DrawComponent.cpp" />
     <ClCompile Include="render\Renderer.cpp" />
     <ClCompile Include="render\Shader.cpp" />
-    <ClCompile Include="components\TriangleComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="components\CompositeComponent.h" />
     <ClInclude Include="core\Component.h" />
+    <ClInclude Include="core\Compositer.h" />
     <ClInclude Include="core\Game.h" />
+    <ClInclude Include="core\Math.h" />
     <ClInclude Include="input\InputDevice.h" />
     <ClInclude Include="input\Keys.h" />
     <ClInclude Include="misc\Delegates.h" />
@@ -167,7 +170,6 @@
     <ClInclude Include="render\DrawComponent.h" />
     <ClInclude Include="render\Renderer.h" />
     <ClInclude Include="render\Shader.h" />
-    <ClInclude Include="components\TriangleComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="misc\Delegates.natvis" />

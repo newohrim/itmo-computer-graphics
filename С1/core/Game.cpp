@@ -16,6 +16,7 @@
 #include "render/Shader.h"
 
 #include "components/QuadComponent.h"
+#include "components/CompositeComponent.h"
 
 #include "input/InputDevice.h"
 
@@ -81,10 +82,13 @@ void Game::RunLoop()
 
 void Game::LoadData()
 {
-	QuadComponent* tri = new QuadComponent(this);
-	tri->SetGeometry(renderer->GetUtils()->GetQuadGeom(renderer.get()));
-	tri->SetShader(renderer->GetUtils()->GetQuadShader(renderer.get()));
-	tri->Initialize();
+	CompositeComponent* paddle = new CompositeComponent(this);
+	QuadComponent* quad = new QuadComponent(this);
+	quad->SetGeometry(renderer->GetUtils()->GetQuadGeom(renderer.get()));
+	quad->SetShader(renderer->GetUtils()->GetQuadShader(renderer.get()));
+	paddle->AddChild({quad});
+	paddle->Initialize();
+	paddle->SetPosition({60, 400});
 }
 
 void Game::UpdateGame()

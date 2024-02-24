@@ -15,7 +15,7 @@ public:
 	DrawComponent(Game* game);
 	~DrawComponent();
 
-	void Initialize() override;
+	void Initialize(Compositer* parent = nullptr) override;
 	virtual void Draw(Renderer* renderer);
 
 	std::weak_ptr<Shader> GetShader() const { return linkedShader; }

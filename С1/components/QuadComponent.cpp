@@ -1,10 +1,12 @@
 #include "QuadComponent.h"
 
 #include "core/Game.h"
+#include "core/Compositer.h"
 #include "render/GeometryData.h"
 #include "render/Shader.h"
 #include "render/Renderer.h"
 #include "render/RenderUtils.h"
+#include "os/Window.h"
 
 QuadComponent::QuadComponent(Game* game) 
 	: DrawComponent(game)
@@ -16,20 +18,18 @@ QuadComponent::QuadComponent(Game* game)
 	SetShader(shader);
 }
 
-void QuadComponent::Initialize()
-{
-	DrawComponent::Initialize();
-}
-
 void QuadComponent::Draw(Renderer* renderer)
 {
-	// TODO: set color
-	// TODO: set size
 	auto shader = GetShader();
 	auto context = renderer->GetDeviceContext();
+	auto window = renderer->GetWindow();
+	const Vector2 pos = parentRef ? parentRef->GetPosition() : Vector2{0.0f, 0.0f};
+	const Vector2 screenDim{(float)window->GetWidth(), (float)window->GetHeigth()};
+	const Vector2 screenPos = (pos / screenDim - Vector2{0.5f}) * Vector2{2.0f};
+	const Vector2 screenSize = size / screenDim * Vector2{2.0f};
 	auto cbVS = RenderUtils::QuadCBVS{};
-	cbVS.offset = DirectX::SimpleMath::Vector4{offset.x, offset.y, 0, 0};
-	cbVS.size = DirectX::SimpleMath::Vector4{size.x, size.y, 0, 0};
+	cbVS.offset = DirectX::SimpleMath::Vector4{screenPos.x, screenPos.y, 0, 0};
+	cbVS.size = DirectX::SimpleMath::Vector4{screenSize.x, screenSize.y, 0, 0};
 	auto cbPS = RenderUtils::QuadCBPS{};
 	cbPS.color = color;
 	shader.lock()->SetCBVS(context, 0, &cbVS);

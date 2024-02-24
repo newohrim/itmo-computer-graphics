@@ -26,6 +26,7 @@ public:
 
 	void SetClearColor(float* color);
 
+	Window* GetWindow() const { return window; }
 	RenderUtils* GetUtils() const { return utils.get(); }
 	ID3D11Device* GetDevice() const { return device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return context; }

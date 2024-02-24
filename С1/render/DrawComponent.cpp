@@ -25,7 +25,7 @@ DrawComponent::~DrawComponent()
 	GetGame()->GetRenderer()->RemoveComponent(this);
 }
 
-void DrawComponent::Initialize()
+void DrawComponent::Initialize(Compositer* parent)
 {
 	assert(linkedShader);
 	assert(geom);
