@@ -14,8 +14,8 @@
 #pragma comment(lib, "dxguid.lib")
 
 
-DrawComponent::DrawComponent(Game* game) 
-	: Component(game)
+DrawComponent::DrawComponent(Game* game, Compositer* compister)
+	: Component(game, compister)
 {
 	GetGame()->GetRenderer()->AddComponent(this);
 }

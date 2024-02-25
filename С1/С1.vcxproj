@@ -139,12 +139,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="components\BallComponent.cpp" />
     <ClCompile Include="components\CompositeComponent.cpp" />
     <ClCompile Include="core\Component.cpp" />
     <ClCompile Include="core\Game.cpp" />
     <ClCompile Include="input\InputDevice.cpp" />
     <ClCompile Include="misc\Delegates.cpp" />
     <ClCompile Include="components\QuadComponent.cpp" />
+    <ClCompile Include="components\PaddleComponent.cpp" />
+    <ClCompile Include="components\MoveComponent.cpp" />
     <ClCompile Include="render\RenderUtils.cpp" />
     <ClCompile Include="render\GeometryData.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -152,8 +155,10 @@
     <ClCompile Include="render\DrawComponent.cpp" />
     <ClCompile Include="render\Renderer.cpp" />
     <ClCompile Include="render\Shader.cpp" />
+    <ClCompile Include="ScoreBoard.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="components\BallComponent.h" />
     <ClInclude Include="components\CompositeComponent.h" />
     <ClInclude Include="core\Component.h" />
     <ClInclude Include="core\Compositer.h" />
@@ -163,6 +168,8 @@
     <ClInclude Include="input\Keys.h" />
     <ClInclude Include="misc\Delegates.h" />
     <ClInclude Include="components\QuadComponent.h" />
+    <ClInclude Include="components\PaddleComponent.h" />
+    <ClInclude Include="components\MoveComponent.h" />
     <ClInclude Include="render\RenderUtils.h" />
     <ClInclude Include="render\GeometryData.h" />
     <ClInclude Include="os\Window.h" />
@@ -170,6 +177,7 @@
     <ClInclude Include="render\DrawComponent.h" />
     <ClInclude Include="render\Renderer.h" />
     <ClInclude Include="render\Shader.h" />
+    <ClInclude Include="ScoreBoard.h" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="misc\Delegates.natvis" />

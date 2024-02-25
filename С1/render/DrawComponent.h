@@ -12,7 +12,7 @@ struct GeometryData;
 class DrawComponent : public Component
 {
 public:
-	DrawComponent(Game* game);
+	DrawComponent(Game* game, Compositer* compositer = nullptr);
 	~DrawComponent();
 
 	void Initialize(Compositer* parent = nullptr) override;

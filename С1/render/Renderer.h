@@ -14,7 +14,7 @@ struct ID3D11RasterizerState;
 struct ID3D11RenderTargetView;
 
 class Renderer {
-	friend DrawComponent::DrawComponent(class Game*);
+	friend DrawComponent::DrawComponent(Game*, Compositer*);
 	friend DrawComponent::~DrawComponent();
 
 public:

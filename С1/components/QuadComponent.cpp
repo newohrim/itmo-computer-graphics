@@ -8,8 +8,8 @@
 #include "render/RenderUtils.h"
 #include "os/Window.h"
 
-QuadComponent::QuadComponent(Game* game) 
-	: DrawComponent(game)
+QuadComponent::QuadComponent(Game* game, Compositer* compositer)
+	: DrawComponent(game, compositer)
 {
 	Renderer* renderer = GetGame()->GetRenderer();
 	GeometryData::PTR geom = renderer->GetUtils()->GetQuadGeom(renderer);

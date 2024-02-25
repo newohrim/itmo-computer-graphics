@@ -1,7 +1,7 @@
 #include "CompositeComponent.h"
 
-CompositeComponent::CompositeComponent(Game* game)
-	: Component(game)
+CompositeComponent::CompositeComponent(Game* game, Compositer* compositer)
+	: Component(game, compositer)
 {
 }
 
@@ -11,6 +11,13 @@ CompositeComponent::~CompositeComponent()
 		delete child;
 	}
 	children.clear();
+}
+
+void CompositeComponent::ProceedInput(InputDevice* inpDevice)
+{
+	for (Component* child : children) {
+		child->ProceedInput(inpDevice);
+	}
 }
 
 void CompositeComponent::Initialize(Compositer* parent)

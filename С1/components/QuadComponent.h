@@ -7,7 +7,7 @@ public:
 	using Color = DirectX::SimpleMath::Color;
 	using Vector2 = DirectX::SimpleMath::Vector2;
 
-	QuadComponent(Game* game);
+	QuadComponent(Game* game, Compositer* compositer = nullptr);
 
 	void Initialize(Compositer* parent = nullptr) override { parentRef = parent; }
 	void Draw(Renderer* renderer) override;
@@ -19,5 +19,5 @@ private:
 	Compositer* parentRef = nullptr;
 
 	Color color{1.0f, 1.0f, 1.0f, 1.0f};
-	Vector2 size{10.0f, 60.0f};
+	Vector2 size{100.0f, 100.0f};
 };

@@ -9,7 +9,7 @@
 using namespace DirectX::SimpleMath;
 
 
-InputDevice* inpDevice = nullptr;
+InputDevice* globalInputDevice = nullptr;
 
 
 InputDevice::InputDevice(Game* inGame) : game(inGame)

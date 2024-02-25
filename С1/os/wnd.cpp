@@ -40,7 +40,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 	switch (umessage) {
 	case WM_INPUT:
 	{
-		if (inpDevice) {
+		if (globalInputDevice) {
 
 			UINT dwSize = 0;
 			GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
@@ -64,7 +64,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 				//	raw->data.keyboard.Message,
 				//	raw->data.keyboard.VKey);
 
-				inpDevice->OnKeyDown({
+				globalInputDevice->OnKeyDown({
 					raw->data.keyboard.MakeCode,
 					raw->data.keyboard.Flags,
 					raw->data.keyboard.VKey,
@@ -74,7 +74,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 			else if (raw->header.dwType == RIM_TYPEMOUSE)
 			{
 				//printf(" Mouse: X=%04d Y:%04d \n", raw->data.mouse.lLastX, raw->data.mouse.lLastY);
-				inpDevice->OnMouseMove({
+				globalInputDevice->OnMouseMove({
 					raw->data.mouse.usFlags,
 					raw->data.mouse.usButtonFlags,
 					static_cast<int>(raw->data.mouse.ulExtraInformation),

@@ -116,7 +116,7 @@ public:
 	void OnMouseMove(RawMouseEventArgs args);
 };
 
-extern InputDevice* inpDevice;
+extern InputDevice* globalInputDevice;
 
 /*
 		case WM_INPUT:

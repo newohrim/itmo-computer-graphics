@@ -17,8 +17,11 @@
 
 #include "components/QuadComponent.h"
 #include "components/CompositeComponent.h"
+#include "components/PaddleComponent.h"
+#include "components/BallComponent.h"
 
 #include "input/InputDevice.h"
+#include "ScoreBoard.h"
 
 #ifdef _WIN32
 #include "os/wnd.h"
@@ -43,7 +46,7 @@ bool Game::Initialize(const std::string name, int windowWidth, int windowHeight)
 
 	LoadData();
 
-	inpDevice = new InputDevice(this);
+	globalInputDevice = new InputDevice(this);
 
 	prevTime = std::chrono::steady_clock::now();
 
@@ -62,12 +65,17 @@ void Game::ProcessInput()
 	// If windows signals to end the application then exit out.
 	if (msg.message == WM_QUIT) {
 		isRunning = false;
+		return;
+	}
+
+	for (Component* comp : components) {
+		comp->ProceedInput(globalInputDevice);
 	}
 }
 
 void Game::Shutdown()
 {
-	delete(inpDevice);
+	delete(globalInputDevice);
 }
 
 void Game::RunLoop()
@@ -80,15 +88,32 @@ void Game::RunLoop()
 	}
 }
 
+void Game::Restart()
+{
+	UnloadData();
+	LoadData();
+}
+
 void Game::LoadData()
 {
-	CompositeComponent* paddle = new CompositeComponent(this);
-	QuadComponent* quad = new QuadComponent(this);
-	quad->SetGeometry(renderer->GetUtils()->GetQuadGeom(renderer.get()));
-	quad->SetShader(renderer->GetUtils()->GetQuadShader(renderer.get()));
-	paddle->AddChild({quad});
-	paddle->Initialize();
-	paddle->SetPosition({60, 400});
+	PaddleComponent* paddleA = new PaddleComponent(this, {10.0f, 60.0f}, true);
+	paddleA->Initialize();
+	paddleA->SetPosition({60, 400});
+	PaddleComponent* paddleB = new PaddleComponent(this, {10.0f, 60.0f}, false);
+	paddleB->Initialize();
+	paddleB->SetPosition({window->GetWidth() - 60.0f, 400});
+	BallComponent* ball = new BallComponent(this, paddleA, paddleB, {20.0f, 20.0f});
+	ball->Initialize();
+	ball->SetPosition({400, 400});
+	ScoreBoard::UpdateScoreBoard(window);
+}
+
+void Game::UnloadData()
+{
+	while (!components.empty())
+	{
+		delete components.back();
+	}
 }
 
 void Game::UpdateGame()
@@ -104,11 +129,11 @@ void Game::UpdateGame()
 
 		totalTime -= 1.0f;
 
-#ifdef _WIN32
-		WCHAR text[256];
-		swprintf_s(text, TEXT("FPS: %f"), fps);
-		SetWindowText(wndGetHWND(window), text);
-#endif
+//#ifdef _WIN32
+//		WCHAR text[256];
+//		swprintf_s(text, TEXT("FPS: %f"), fps);
+//		SetWindowText(wndGetHWND(window), text);
+//#endif
 
 		frameNum = 0;
 	}

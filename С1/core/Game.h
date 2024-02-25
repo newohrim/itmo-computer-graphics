@@ -10,9 +10,10 @@
 
 class Window;
 class Renderer;
+class PaddleComponent;
 
 class Game {
-	friend Component::Component(Game*);
+	friend Component::Component(Game*, Compositer*);
 	friend Component::~Component();
 
 public:
@@ -21,7 +22,9 @@ public:
 	void Shutdown();
 	void RunLoop();
 
+	void Restart();
 	void LoadData();
+	void UnloadData();
 	void UpdateGame();
 	void GenerateOutput();
 
