@@ -16,7 +16,7 @@ void MeshComponent::Draw(Renderer* renderer)
 	auto context = renderer->GetDeviceContext();
 	auto window = renderer->GetWindow();
 	auto cbVS = RenderUtils::MeshCBVS{};
-	cbVS.worldTransform = parent->GetWorldTransform();
+	cbVS.worldTransform = parent->GetWorldTransform().Transpose();
 	cbVS.viewProj = renderer->GetViewMatrix();
 	auto cbPS = RenderUtils::QuadCBPS{};
 	cbPS.color = color;
