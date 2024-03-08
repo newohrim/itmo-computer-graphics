@@ -9,6 +9,8 @@ public:
 
 	void Draw(Renderer* renderer) override;
 
+	void SetColor(const Math::Color& _color) { color = _color; }
+
 protected:
 	Compositer* parent;
 	Math::Color color{ 1.0f, 1.0f, 1.0f, 1.0f };

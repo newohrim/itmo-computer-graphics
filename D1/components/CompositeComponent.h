@@ -11,7 +11,9 @@ public:
 	CompositeComponent(Game* game, Compositer* compositer = nullptr);
 	~CompositeComponent();
 
+	// TODO: check if component is already in children list
 	void AddChild(const std::initializer_list<Component*>& batch) override { children.insert(children.end(), batch.begin(), batch.end()); }
+	void RemoveChild(Component* comp) override;
 
 	void ProceedInput(InputDevice* inpDevice) override;
 	void Initialize(Compositer* parent = nullptr) override;

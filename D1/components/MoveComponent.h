@@ -5,9 +5,9 @@
 
 class MoveComponent : public Component {
 public:
-	MoveComponent(Game* game, Compositer* compositer = nullptr);
+	MoveComponent(Game* game, Compositer* compositer);
 
-	void Move(Math::Vector2 dir);
+	void Move(Math::Vector3 dir);
 
 	void Update(float deltaTime, Compositer* parent = nullptr) override;
 
@@ -15,6 +15,6 @@ public:
 	void SetMoveSpeed(float _moveSpeed) { moveSpeed = _moveSpeed; }
 
 protected:
-	Math::Vector2 direction = Math::Vector2::Zero;
-	float moveSpeed = 100.0f;
+	Math::Vector3 direction = Math::Vector3::Zero;
+	float moveSpeed = 1.0f;
 };

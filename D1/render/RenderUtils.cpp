@@ -3,8 +3,10 @@
 #include "Renderer.h"
 #include "GeometryData.h"
 #include "Shader.h"
+#include "SphereCreator.h"
 
 #include <cassert>
+#include <iostream>
 
 #include <d3d.h>
 #include <d3d11.h>
@@ -70,6 +72,16 @@ std::shared_ptr<GeometryData> RenderUtils::GetCubeGeom(Renderer* renderer)
 
 	cubeGeom = CreateCubeGeom(renderer);
 	return cubeGeom;
+}
+
+std::shared_ptr<GeometryData> RenderUtils::GetSphereGeom(Renderer* renderer)
+{
+	if (sphereGeom) {
+		return sphereGeom;
+	}
+
+	sphereGeom = CreateSphereGeom(renderer);
+	return sphereGeom;
 }
 
 std::shared_ptr<Shader> RenderUtils::CreateQuadShader(Renderer* renderer)
@@ -261,5 +273,19 @@ std::shared_ptr<GeometryData> RenderUtils::CreateCubeGeom(Renderer* renderer)
 		renderer->GetDevice(),
 		points, (int)(sizeof(DirectX::XMFLOAT4) * std::size(points)),
 		indices, (int)(sizeof(uint32_t) * std::size(indices)),
+		std::vector<uint32_t>{ 16 }, std::vector<uint32_t>{0});
+}
+
+std::shared_ptr<GeometryData> RenderUtils::CreateSphereGeom(Renderer* renderer)
+{
+	IcoSphereCreator sphereCreator;
+	IcoSphereCreator::SphereGeom geom = sphereCreator.Create(2);
+	for (auto p : geom.geometry) {
+		//std::cout << '{' << p.x << ", " << p.y << ", " << p.z << "},\n";
+	}
+	return std::make_shared<GeometryData>(
+		renderer->GetDevice(),
+		static_cast<void*>(geom.geometry.data()), (int)(sizeof(DirectX::XMFLOAT4) * geom.geometry.size()),
+		reinterpret_cast<uint32_t*>(geom.indices.data()), (int)(sizeof(uint32_t) * geom.indices.size() * 3),
 		std::vector<uint32_t>{ 16 }, std::vector<uint32_t>{0});
 }

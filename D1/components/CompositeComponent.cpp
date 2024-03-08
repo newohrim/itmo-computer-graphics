@@ -1,5 +1,7 @@
 #include "CompositeComponent.h"
 
+#include <algorithm>
+
 CompositeComponent::CompositeComponent(Game* game, Compositer* compositer)
 	: Component(game, compositer)
 {
@@ -11,6 +13,15 @@ CompositeComponent::~CompositeComponent()
 		delete child;
 	}
 	children.clear();
+}
+
+void CompositeComponent::RemoveChild(Component* comp)
+{
+	// TODO: allow removing child in update by add pending list
+	auto iter = std::find(children.begin(), children.end(), comp);
+	if (iter != children.end()) {
+		children.erase(iter);
+	}
 }
 
 void CompositeComponent::ProceedInput(InputDevice* inpDevice)

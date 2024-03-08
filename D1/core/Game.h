@@ -46,6 +46,11 @@ private:
 
 	Window* window = nullptr;
 
+	class CompositeComponent* player = nullptr;
+	class CameraComponent* fpsCam = nullptr;
+	class CameraComponent* tpsCam = nullptr;
+	bool isFpsModeOn = true;
+
 	std::chrono::time_point<std::chrono::steady_clock> prevTime;
 	float totalTime = 0.0f;
 	float deltaTime = 0.0f;

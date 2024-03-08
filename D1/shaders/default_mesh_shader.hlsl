@@ -23,8 +23,7 @@ PS_IN VSMain( VS_IN input )
 {
 	PS_IN output = (PS_IN)0;
 	
-	//output.pos = mul(input.pos, mul(worldTransform, viewProj));
-	output.pos = mul(input.pos, viewProj);
+	output.pos = mul(input.pos, mul(worldTransform, viewProj));
 	
 	return output;
 }

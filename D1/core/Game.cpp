@@ -17,7 +17,9 @@
 
 #include "components/CompositeComponent.h"
 #include "components/FPSCamera.h"
+#include "components/ThirdPersonCamera.h"
 #include "components/MeshComponent.h"
+#include "components/OrbiterComponent.h"
 
 #include "input/InputDevice.h"
 
@@ -44,6 +46,8 @@ bool Game::Initialize(const std::string name, int windowWidth, int windowHeight)
 
 	globalInputDevice = new InputDevice(this);
 
+	srand(std::time(0));
+
 	LoadData();
 
 	prevTime = std::chrono::steady_clock::now();
@@ -68,6 +72,30 @@ void Game::ProcessInput()
 
 	for (Component* comp : components) {
 		comp->ProceedInput(globalInputDevice);
+	}
+
+	if (globalInputDevice->IsKeyDown(Keys::Tab)) {
+		CameraParamsPerspective perspective;
+		perspective.aspectRatio = (float)window->GetWidth() / window->GetHeigth();
+		if (isFpsModeOn) {
+			player->RemoveChild(fpsCam);
+			if (!tpsCam) {
+				tpsCam = new ThirdPersonCamera(this, perspective, player);
+				tpsCam->Initialize(player);
+			} else {
+				player->AddChild({tpsCam});
+			}
+			isFpsModeOn = false;
+		} else {
+			player->RemoveChild(tpsCam);
+			if (!fpsCam) {
+				fpsCam = new ThirdPersonCamera(this, perspective, player);
+				fpsCam->Initialize(player);
+			} else {
+				player->AddChild({fpsCam});
+			}
+			isFpsModeOn = true;
+		}
 	}
 }
 
@@ -94,19 +122,42 @@ void Game::Restart()
 
 void Game::LoadData()
 {
-	CompositeComponent* player = new CompositeComponent(this);
-	CameraParamsPerspective perspective;
-	perspective.aspectRatio = (float)window->GetWidth() / window->GetHeigth();
-	FPSCamera* fpsCamera = new FPSCamera(this, perspective, player);
-	//player->SetPosition(Math::Vector3{-10.0f, 0.0f, 0.0f});
-	player->Initialize();
+	auto rndColor = []() {
+		auto rndFloat = []() { return (float)rand() / RAND_MAX; };
+		return Math::Color(rndFloat(), rndFloat(), rndFloat());
+	};
 
-	CompositeComponent* cube = new CompositeComponent(this);
-	MeshComponent* cubeMesh = new MeshComponent(this, cube);
-	cubeMesh->SetShader(renderer->GetUtils()->GetMeshShader(renderer.get()));
-	cubeMesh->SetGeometry(renderer->GetUtils()->GetCubeGeom(renderer.get()));
-	cube->SetPosition(Math::Vector3{10.0f, 0.0f, 0.0f});
-	cube->Initialize();
+	{
+		player = new CompositeComponent(this);
+		CameraParamsPerspective perspective;
+		perspective.aspectRatio = (float)window->GetWidth() / window->GetHeigth();
+		fpsCam = new FPSCamera(this, perspective, player);
+		isFpsModeOn = true;
+		player->SetPosition(Math::Vector3{ -10.0f, 0.0f, 0.0f });
+		player->Initialize();
+	}
+
+	for (int i = 0; i < 5; ++i) {
+		CompositeComponent* cube = new CompositeComponent(this);
+		OrbiterComponent* orbiter = new OrbiterComponent(this, cube, Math::Vector3::Zero, 10.0f);
+		MeshComponent* cubeMesh = new MeshComponent(this, cube);
+		cubeMesh->SetColor(rndColor());
+		cubeMesh->SetShader(renderer->GetUtils()->GetMeshShader(renderer.get()));
+		cubeMesh->SetGeometry(renderer->GetUtils()->GetCubeGeom(renderer.get()));
+		cube->SetPosition(Math::Vector3{ 0.0f, 0.0f, 0.0f });
+		cube->Initialize();
+	}
+
+	for (int i = 0; i < 5; ++i) {
+		CompositeComponent* sphere = new CompositeComponent(this);
+		OrbiterComponent* orbiter = new OrbiterComponent(this, sphere, Math::Vector3::Zero, 10.0f);
+		MeshComponent* cubeMesh = new MeshComponent(this, sphere);
+		cubeMesh->SetColor(rndColor());
+		cubeMesh->SetShader(renderer->GetUtils()->GetMeshShader(renderer.get()));
+		cubeMesh->SetGeometry(renderer->GetUtils()->GetSphereGeom(renderer.get()));
+		sphere->SetPosition(Math::Vector3{ 0.0f, 0.0f, 0.0f });
+		sphere->Initialize();
+	}
 }
 
 void Game::UnloadData()
@@ -115,6 +166,8 @@ void Game::UnloadData()
 	{
 		delete components.back();
 	}
+	delete fpsCam;
+	delete tpsCam;
 }
 
 void Game::UpdateGame()

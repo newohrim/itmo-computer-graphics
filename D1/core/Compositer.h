@@ -7,6 +7,7 @@ template<typename CHILD_T>
 class Compositer_T {
 public:
 	virtual void AddChild(const std::initializer_list<CHILD_T*>& batch) = 0;
+	virtual void RemoveChild(CHILD_T* comp) = 0;
 
 	virtual Math::Vector3 GetPosition() const = 0;
 	virtual void SetPosition(Math::Vector3 pos) = 0;

@@ -9,7 +9,7 @@
 FPSCamera::FPSCamera(Game* game, const CameraParams& params, Compositer* parent)
 	: CameraComponent(game, params, parent)
 	, mPitchSpeed(0.0f)
-	, mMaxPitch(Math::Pi / 3.0f)
+	, mMaxPitch(Math::Pi / 2.1f)
 	, mPitch(0.0f)
 	, parentC(parent)
 {

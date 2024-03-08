@@ -33,6 +33,7 @@ public:
 
 	std::shared_ptr<Shader> GetMeshShader(Renderer* renderer);
 	std::shared_ptr<GeometryData> GetCubeGeom(Renderer* renderer);
+	std::shared_ptr<GeometryData> GetSphereGeom(Renderer* renderer);
 
 private:
 	std::shared_ptr<Shader> CreateQuadShader(Renderer* renderer);
@@ -40,6 +41,7 @@ private:
 
 	std::shared_ptr<Shader> CreateMeshShader(Renderer* renderer);
 	std::shared_ptr<GeometryData> CreateCubeGeom(Renderer* renderer);
+	std::shared_ptr<GeometryData> CreateSphereGeom(Renderer* renderer);
 
 private:
 	std::shared_ptr<Shader> quadShader;
@@ -47,4 +49,5 @@ private:
 
 	std::shared_ptr<Shader> meshShader;
 	std::shared_ptr<GeometryData> cubeGeom;
+	std::shared_ptr<GeometryData> sphereGeom;
 };
