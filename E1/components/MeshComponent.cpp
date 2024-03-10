@@ -22,5 +22,8 @@ void MeshComponent::Draw(Renderer* renderer)
 	cbPS.color = color;
 	shader.lock()->SetCBVS(context, 0, &cbVS);
 	shader.lock()->SetCBPS(context, 0, &cbPS);
+	if (tex.IsValid()) {
+		tex.Activate(context);
+	}
 	DrawComponent::Draw(renderer);
 }

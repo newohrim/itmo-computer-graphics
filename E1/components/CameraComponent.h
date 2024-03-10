@@ -8,7 +8,7 @@ struct CameraParams {
 	virtual Math::Matrix MakeProjectionMatrix() const = 0;
 
 	float nearPlane = 0.5f;
-	float farPlane = 10.0f;
+	float farPlane = 1000.0f;
 };
 
 struct CameraParamsPerspective : public CameraParams {

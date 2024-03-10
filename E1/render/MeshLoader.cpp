@@ -23,10 +23,10 @@
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "dxguid.lib")
 
-void CopyNodesWithMeshes(const aiScene* scene, aiNode* node, Compositer* targetParent, const aiMatrix4x4& accTransform, Game* game);
+MeshComponent* CopyNodesWithMeshes(const aiScene* scene, aiNode* node, Compositer* targetParent, const aiMatrix4x4& accTransform, Game* game);
 void AddMesh(const aiScene* scene, int meshIdx, MeshComponent* meshComp);
 
-bool MeshLoader::LoadMesh(const std::string& path, CompositeComponent* parent)
+bool MeshLoader::LoadMesh(const std::string& path, CompositeComponent* parent, MeshComponent** outMesh)
 {
     // Create an instance of the Importer class
     Assimp::Importer importer;
@@ -50,22 +50,32 @@ bool MeshLoader::LoadMesh(const std::string& path, CompositeComponent* parent)
 
     // Now we can access the file's contents.
     //DoTheSceneProcessing(scene);
-    CopyNodesWithMeshes(scene, scene->mRootNode, parent, aiMatrix4x4{}, parent->GetGame());
+    MeshComponent* temp = CopyNodesWithMeshes(scene, scene->mRootNode, parent, aiMatrix4x4{}, parent->GetGame());
+    if (outMesh) {
+        // TODO: remove this temporal solution
+        *outMesh = temp;
+    }
 
     // We're done. Everything will be cleaned up by the importer destructor
     return true;
 }
 
-void CopyNodesWithMeshes(const aiScene* scene, aiNode* node, Compositer* targetParent, const aiMatrix4x4& accTransform, Game* game) {
+MeshComponent* CopyNodesWithMeshes(const aiScene* scene, aiNode* node, Compositer* targetParent, const aiMatrix4x4& accTransform, Game* game) {
     Compositer* parent;
     aiMatrix4x4 transform;
+
+    MeshComponent* temp = nullptr;
 
     // if node has meshes, create a new scene object for it
     if (node->mNumMeshes > 0) {
         // copy the meshes
         CompositeComponent* newObject = new CompositeComponent(game, targetParent);
         for (uint32_t i = 0; i < node->mNumMeshes; ++i) {
-            AddMesh(scene, i, new MeshComponent(game, targetParent));
+            MeshComponent* newMesh = new MeshComponent(game, targetParent);
+            if (!temp) {
+                temp = newMesh;
+            }
+            AddMesh(scene, i, newMesh);
         }
 
         // the new object is the parent for all child nodes
@@ -92,8 +102,10 @@ void CopyNodesWithMeshes(const aiScene* scene, aiNode* node, Compositer* targetP
     // continue for all child nodes
     for (uint32_t i = 0; i < node->mNumChildren; ++i) {
         aiNode* child = node->mChildren[i];
-        CopyNodesWithMeshes(scene, child, parent, transform, game);
+        temp = CopyNodesWithMeshes(scene, child, parent, transform, game);
     }
+
+    return temp;
 }
 
 struct MeshData {
@@ -109,8 +121,14 @@ MeshData GatherMeshData(const aiScene* scene, int meshIdx)
     std::vector<std::function<void(int)>> pipeline;
     auto addVector = [&res](const aiVector3D& v) {
         res.vertFloats.push_back(v.x);
+        if (res.vertFloats.back() > 905 && res.vertFloats.back() < 906) {
+        }
         res.vertFloats.push_back(v.y);
+        if (res.vertFloats.back() > 905 && res.vertFloats.back() < 906) {
+        }
         res.vertFloats.push_back(v.z);
+        if (res.vertFloats.back() > 905 && res.vertFloats.back() < 906) {
+        }
     };
     auto addInput3 = [&res](const char* channel) {
         res.stride += sizeof(float) * 3;
@@ -147,6 +165,8 @@ MeshData GatherMeshData(const aiScene* scene, int meshIdx)
         pipeline.push_back([&](int idx) {
             for (uint32_t i = 0; i < uvCompNum; ++i) {
                 res.vertFloats.push_back(mesh->mTextureCoords[TEXCOORD_IDX][idx][i]);
+                if (res.vertFloats.back() > 905 && res.vertFloats.back() < 906) {
+                }
             }
         });
         DXGI_FORMAT uvFormat;

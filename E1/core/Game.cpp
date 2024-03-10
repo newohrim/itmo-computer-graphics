@@ -107,12 +107,20 @@ void Game::LoadData()
 		CameraParamsPerspective perspective;
 		perspective.aspectRatio = (float)window->GetWidth() / window->GetHeigth();
 		camera = new ThirdPersonCamera(this, perspective, player);
-
-		MeshLoader::LoadMesh("assets/flop.fbx", player);
-
-		player->SetPosition(Math::Vector3{ -10.0f, 0.0f, 0.0f });
-		player->SetScale(Math::Vector3{0.01f});
+		player->SetPosition(Math::Vector3{ 0.0f, 0.0f, 0.0f });
 		player->Initialize();
+	}
+	{
+		CompositeComponent* flopa = new CompositeComponent(this);
+		MeshComponent* rootMesh = nullptr;
+		MeshLoader::LoadMesh("assets/flop.fbx", flopa, &rootMesh);
+		Texture tex(0, L"assets/flopTex.png", renderer.get());
+		if (rootMesh) {
+			rootMesh->SetTexture(tex);
+		}
+		flopa->SetScale(Math::Vector3{ 0.01f });
+		flopa->SetRotation(Math::Quaternion::CreateFromYawPitchRoll(0.0f, Math::Pi / 2, 0.0f));
+		flopa->Initialize();
 	}
 }
 

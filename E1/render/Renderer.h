@@ -1,7 +1,9 @@
 #pragma once
 
 #include <vector>
+#include <unordered_map>
 #include <memory>
+#include <string>
 #include "RenderUtils.h"
 #include "DrawComponent.h"
 
@@ -12,6 +14,10 @@ struct ID3D11DeviceContext;
 struct IDXGISwapChain;
 struct ID3D11RasterizerState;
 struct ID3D11RenderTargetView;
+struct ID3D11ShaderResourceView;
+struct ID3D11SamplerState;
+struct ID3D11DepthStencilView;
+struct ID3D11DepthStencilState;
 
 class Renderer {
 	friend DrawComponent::DrawComponent(Game*, Compositer*);
@@ -29,6 +35,8 @@ public:
 	const Math::Matrix& GetViewMatrix() const { return viewMatr; }
 	void SetViewMatrix(const Math::Matrix& view) { viewMatr = view; }
 
+	ID3D11ShaderResourceView* GetTexture(const std::wstring& path);
+
 	Window* GetWindow() const { return window; }
 	RenderUtils* GetUtils() const { return utils.get(); }
 	ID3D11Device* GetDevice() const { return device; }
@@ -44,6 +52,8 @@ private:
 
 	std::vector<DrawComponent*> components;
 
+	std::unordered_map<std::wstring, ID3D11ShaderResourceView*> textures;
+
 	Window* window = nullptr;
 
 	ID3D11Device* device = nullptr;
@@ -51,6 +61,9 @@ private:
 	IDXGISwapChain* swapChain = nullptr;
 	ID3D11RasterizerState* rastState = nullptr;
 	ID3D11RenderTargetView* rtv;
+	ID3D11SamplerState* samplerState;
+	ID3D11DepthStencilView* depthBuffer;
+	ID3D11DepthStencilState* pDSState;
 
 	Math::Matrix viewMatr;
 

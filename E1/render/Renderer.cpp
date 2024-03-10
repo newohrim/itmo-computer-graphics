@@ -1,6 +1,7 @@
 #include "Renderer.h"
 
 #include "os/Window.h"
+#include "TextureLoader.h"
 
 #include <d3d.h>
 #include <d3d11.h>
@@ -76,6 +77,72 @@ bool Renderer::Initialize(Window* _window)
 	res = device->CreateRasterizerState(&rastDesc, &rastState);
 	context->RSSetState(rastState);
 
+	D3D11_SAMPLER_DESC samplerDesc = {};
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	samplerDesc.BorderColor[0] = 1.0f;
+	samplerDesc.BorderColor[1] = 1.0f;
+	samplerDesc.BorderColor[2] = 1.0f;
+	samplerDesc.BorderColor[3] = 1.0f;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	device->CreateSamplerState(&samplerDesc, &samplerState);
+	context->PSSetSamplers(0, 1, &samplerState);
+
+	D3D11_TEXTURE2D_DESC depthTextureDesc = {};
+	ZeroMemory(&depthTextureDesc, sizeof(depthTextureDesc));
+	depthTextureDesc.Width = window->GetWidth();
+	depthTextureDesc.Height = window->GetHeigth();
+	depthTextureDesc.MipLevels = 1;
+	depthTextureDesc.ArraySize = 1;
+	depthTextureDesc.SampleDesc.Count = 1;
+	depthTextureDesc.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
+	depthTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthTextureDesc.SampleDesc.Count = 1;
+	depthTextureDesc.SampleDesc.Quality = 0;
+
+	ID3D11Texture2D* dsTexutre;
+	if (FAILED(device->CreateTexture2D(&depthTextureDesc, NULL, &dsTexutre))) {
+		exit(-1);
+		return false;
+	}
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	ZeroMemory(&dsvDesc, sizeof(dsvDesc));
+	dsvDesc.Format = depthTextureDesc.Format;
+	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+
+	device->CreateDepthStencilView(dsTexutre, &dsvDesc, &depthBuffer);
+	dsTexutre->Release();
+
+	D3D11_DEPTH_STENCIL_DESC dsDesc;
+
+	// Depth test parameters
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+
+	// Stencil test parameters
+	dsDesc.StencilEnable = false;
+	dsDesc.StencilReadMask = 0xFF;
+	dsDesc.StencilWriteMask = 0xFF;
+
+	// Stencil operations if pixel is front-facing
+	dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	// Stencil operations if pixel is back-facing
+	dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	// Create depth stencil state
+	device->CreateDepthStencilState(&dsDesc, &pDSState);
+
 	utils = std::make_unique<RenderUtils>();
 
     return true;
@@ -101,9 +168,14 @@ void Renderer::Draw()
 
 	context->RSSetViewports(1, &viewport);
 
-	context->OMSetRenderTargets(1, &rtv, nullptr);
+	context->OMSetRenderTargets(1, &rtv, depthBuffer);
+
+	context->OMSetDepthStencilState(pDSState, 1);
 
 	context->ClearRenderTargetView(rtv, clearColor);
+	context->ClearDepthStencilView(depthBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	context->PSSetSamplers(0, 1, &samplerState);
 
 	for (DrawComponent* comp : components) {
 		comp->Draw(this);
@@ -117,6 +189,18 @@ void Renderer::Draw()
 void Renderer::SetClearColor(float* color)
 {
 	memcpy(clearColor, color, sizeof(float) * 4);
+}
+
+ID3D11ShaderResourceView* Renderer::GetTexture(const std::wstring& path)
+{
+	// TODO: add texture unload if not used
+	auto iter = textures.find(path);
+	if (iter != textures.end()) {
+		return iter->second;
+	}
+	ID3D11ShaderResourceView* res;
+	TextureLoader::LoadTexture(path, this, &res);
+	return res;
 }
 
 void Renderer::AddComponent(DrawComponent* comp)

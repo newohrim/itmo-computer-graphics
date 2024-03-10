@@ -147,6 +147,7 @@
     <ClCompile Include="components\FPSCamera.cpp" />
     <ClCompile Include="input\InputDevice.cpp" />
     <ClCompile Include="components\MeshComponent.cpp" />
+    <ClCompile Include="render\Materials.cpp" />
     <ClCompile Include="render\MeshLoader.cpp" />
     <ClCompile Include="misc\Delegates.cpp" />
     <ClCompile Include="components\QuadComponent.cpp" />
@@ -159,6 +160,8 @@
     <ClCompile Include="render\DrawComponent.cpp" />
     <ClCompile Include="render\Renderer.cpp" />
     <ClCompile Include="render\Shader.cpp" />
+    <ClCompile Include="render\TextureLoader.cpp" />
+    <ClCompile Include="render\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="components\CameraComponent.h" />
@@ -172,6 +175,7 @@
     <ClInclude Include="input\InputDevice.h" />
     <ClInclude Include="input\Keys.h" />
     <ClInclude Include="components\MeshComponent.h" />
+    <ClInclude Include="render\Materials.h" />
     <ClInclude Include="render\MeshLoader.h" />
     <ClInclude Include="misc\Delegates.h" />
     <ClInclude Include="components\QuadComponent.h" />
@@ -185,6 +189,8 @@
     <ClInclude Include="render\Renderer.h" />
     <ClInclude Include="render\Shader.h" />
     <ClInclude Include="render\SphereCreator.h" />
+    <ClInclude Include="render\TextureLoader.h" />
+    <ClInclude Include="render\Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="misc\Delegates.natvis" />

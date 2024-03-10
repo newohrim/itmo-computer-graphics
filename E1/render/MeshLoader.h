@@ -5,8 +5,7 @@
 class Game;
 class CompositeComponent;
 
-class MeshLoader
-{
+class MeshLoader {
 public:
-	static bool LoadMesh(const std::string& path, CompositeComponent* parent);
+	static bool LoadMesh(const std::string& path, CompositeComponent* parent, class MeshComponent** outMesh = nullptr);
 };
