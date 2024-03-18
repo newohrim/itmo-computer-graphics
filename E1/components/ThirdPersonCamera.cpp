@@ -34,7 +34,7 @@ void ThirdPersonCamera::Update(float deltaTime, Compositer* parent)
 
 	Math::Vector3 playerPos = parent->GetPosition();
 	Math::Vector3 camPos;
-	camPos.x = playerPos.x + cos(angleX) * radius;
+	camPos.x = playerPos.x - cos(angleX) * radius;
 	camPos.y = playerPos.y + sin(angleX) * radius;
 	camPos.z = playerPos.z + sin(angleY) * radius;
 	
@@ -64,17 +64,16 @@ void ThirdPersonCamera::ProceedInput(InputDevice* inpDevice)
 	forward.z = 0.0f;
 	forward.Normalize();
 	Math::Vector3 right = forward;
-	Math::Quaternion rot = Math::Quaternion::CreateFromAxisAngle(Math::Vector3::UnitZ, Math::Pi / 2);
+	Math::Quaternion rot = Math::Quaternion::CreateFromAxisAngle(Math::Vector3::UnitZ, -Math::Pi / 2);
 	right = Math::Vector3::Transform(right, rot);
 	forward.Normalize();
 	right.Normalize();
 	if (inpDevice->IsKeyDown(Keys::D)) {
-		Math::Vector3 pos = parentC->GetPosition() - right * 0.1f;
-		std::cout << pos.x << '\n';
+		Math::Vector3 pos = parentC->GetPosition() + right * 0.1f;
 		parentC->SetPosition(pos);
 	}
 	if (inpDevice->IsKeyDown(Keys::A)) {
-		Math::Vector3 pos = parentC->GetPosition() + right * 0.1f;
+		Math::Vector3 pos = parentC->GetPosition() - right * 0.1f;
 		parentC->SetPosition(pos);
 	}
 	if (inpDevice->IsKeyDown(Keys::W)) {
@@ -95,7 +94,7 @@ void ThirdPersonCamera::ProceedMouseInput(const MouseMoveEventArgs& event)
 	const float dt = GetGame()->GetDeltaTime();
 	if (abs(event.Offset.x) > 0.01f) {
 		const float angularSpeed = (event.Offset.x / MAX_MOUSE_SPEED) * MAX_ANGULAR_SPEED;
-		float angle = -angularSpeed * dt;
+		float angle = angularSpeed * dt;
 		angleX += angle;
 		/*Math::Quaternion rot = parentC->GetRotation();
 		Math::Quaternion inc = Math::Quaternion::CreateFromAxisAngle(Math::Vector3::UnitZ, angle);
@@ -120,7 +119,7 @@ Math::Vector3 ThirdPersonCamera::GetCameraPos() const
 {
 	Math::Vector3 playerPos = parentC->GetPosition();
 	Math::Vector3 camPos;
-	camPos.x = playerPos.x + cos(angleX) * radius;
+	camPos.x = playerPos.x - cos(angleX) * radius;
 	camPos.y = playerPos.y + sin(angleX) * radius;
 	camPos.z = playerPos.z + sin(angleY) * radius;
 	return camPos;

@@ -50,6 +50,7 @@ private:
 	std::shared_ptr<GeometryData> quadGeom;
 
 	std::shared_ptr<Shader> meshShader;
+	std::shared_ptr<Shader> meshAdvShader;
 	std::shared_ptr<GeometryData> cubeGeom;
 	std::shared_ptr<GeometryData> sphereGeom;
 };

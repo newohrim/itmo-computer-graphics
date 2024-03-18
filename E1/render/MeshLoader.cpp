@@ -39,7 +39,7 @@ bool MeshLoader::LoadMesh(const std::string& path, CompositeComponent* parent, M
         aiProcess_Triangulate |
         aiProcess_JoinIdenticalVertices |
         aiProcess_SortByPType |
-        aiProcess_ConvertToLeftHanded);
+        aiProcess_ConvertToLeftHanded/* | aiProcess_GenBoundingBoxes*/);
 
     // If the import failed, report it
     if (nullptr == scene) {
@@ -113,6 +113,7 @@ struct MeshData {
     std::vector<uint32_t> indices;
     std::vector<D3D11_INPUT_ELEMENT_DESC> inputs;
     uint32_t stride = 0;
+    float boundingSphereRadius = 0.0f;
 };
 
 MeshData GatherMeshData(const aiScene* scene, int meshIdx) 
@@ -198,6 +199,7 @@ MeshData GatherMeshData(const aiScene* scene, int meshIdx)
 
     for (uint32_t i = 0; i < mesh->mNumVertices; ++i) {
         const aiVector3D& vert = mesh->mVertices[i];
+        res.boundingSphereRadius = max(res.boundingSphereRadius, vert.SquareLength());
         addVector(vert);
         for (auto stage : pipeline) {
             stage(i);
@@ -224,6 +226,7 @@ MeshData GatherMeshData(const aiScene* scene, int meshIdx)
 void AddMesh(const aiScene* scene, int meshIdx, MeshComponent* meshComp)
 {
     MeshData mesh = GatherMeshData(scene, meshIdx);
+    mesh.boundingSphereRadius = std::sqrt(mesh.boundingSphereRadius);
     Renderer* renderer = meshComp->GetGame()->GetRenderer();
     GeometryData::PTR geom = std::make_shared<GeometryData>(
         renderer->GetDevice(),

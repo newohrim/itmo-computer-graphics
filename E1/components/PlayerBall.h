@@ -8,4 +8,11 @@ public:
 
 	void Initialize(Compositer* parent = nullptr) override;
 	void ProceedInput(InputDevice* inpDevice) override;
+
+public:
+	// temp list for collision test
+	std::vector<CompositeComponent*> sceneObjects;
+
+protected:
+	CompositeComponent* meshSocket = nullptr;
 };

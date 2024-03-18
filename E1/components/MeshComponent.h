@@ -14,6 +14,9 @@ public:
 
 	void SetTexture(const Texture& _tex) { tex = _tex; }
 
+public:
+	float boundingSphereRadius = 0.0f;
+
 protected:
 	Compositer* parent;
 	Texture tex;

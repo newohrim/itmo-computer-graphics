@@ -66,12 +66,12 @@ std::shared_ptr<Shader> RenderUtils::GetMeshShader(Renderer* renderer)
 
 std::shared_ptr<Shader> RenderUtils::GetAdvMeshShader(Renderer* renderer)
 {
-	if (meshShader) {
-		return meshShader;
+	if (meshAdvShader) {
+		return meshAdvShader;
 	}
 
-	meshShader = CreateAdvMeshShader(renderer);
-	return meshShader;
+	meshAdvShader = CreateAdvMeshShader(renderer);
+	return meshAdvShader;
 }
 
 std::shared_ptr<GeometryData> RenderUtils::GetCubeGeom(Renderer* renderer)

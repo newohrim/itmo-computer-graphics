@@ -21,6 +21,6 @@ public:
 	virtual Math::Vector3 GetForward() const = 0;
 	virtual Math::Vector3 GetRight() const = 0;
 
-	virtual const Math::Matrix& GetWorldTransform() const = 0;
-	virtual void ComputeWorldTransform() = 0;
+	virtual const Math::Matrix& GetWorldTransform(Compositer_T<CHILD_T>* parent = nullptr) = 0;
+	//virtual void ComputeWorldTransform() = 0;
 };

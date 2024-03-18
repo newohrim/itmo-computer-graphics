@@ -199,7 +199,11 @@ ID3D11ShaderResourceView* Renderer::GetTexture(const std::wstring& path)
 		return iter->second;
 	}
 	ID3D11ShaderResourceView* res;
-	TextureLoader::LoadTexture(path, this, &res);
+	if (!TextureLoader::LoadTexture(path, this, &res)) {
+		return nullptr;
+	}
+	textures[path] = res;
+
 	return res;
 }
 

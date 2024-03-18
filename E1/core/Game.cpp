@@ -19,6 +19,7 @@
 #include "components/CompositeComponent.h"
 #include "components/ThirdPersonCamera.h"
 #include "components/MeshComponent.h"
+#include "components/PlayerBall.h"
 
 #include "input/InputDevice.h"
 
@@ -97,12 +98,43 @@ void Game::Restart()
 
 void Game::LoadData()
 {
+	auto rndPos = [](float extendX, float extendY) {
+		auto rndFloat = []() { return (float)rand() / RAND_MAX; };
+		const float x = extendX * 2;
+		const float y = extendY * 2;
+		return Math::Vector3(rndFloat() * x - extendX, rndFloat() * y - extendY, 0.0f);
+	};
 	auto rndColor = []() {
 		auto rndFloat = []() { return (float)rand() / RAND_MAX; };
 		return Math::Color(rndFloat(), rndFloat(), rndFloat());
 	};
 
-	{
+	PlayerBall* player = new PlayerBall(this);
+	player->Initialize();
+
+	/*CompositeComponent* temp = new CompositeComponent(this);
+	MeshComponent* tempMesh = new MeshComponent(this, temp);
+	tempMesh->SetShader(GetRenderer()->GetUtils()->GetMeshShader(renderer.get()));
+	tempMesh->SetGeometry(GetRenderer()->GetUtils()->GetCubeGeom(renderer.get()));*/
+
+	for (int i = 0; i < 25; ++i) {
+		CompositeComponent* flopa = new CompositeComponent(this);
+		MeshComponent* rootMesh = nullptr;
+		MeshLoader::LoadMesh("assets/flop.fbx", flopa, &rootMesh);
+		Texture tex(0, L"assets/flopTex.png", renderer.get());
+		if (rootMesh) {
+			rootMesh->SetTexture(tex);
+			// TODO: i feel really bad about this
+			flopa->boundingSphereRadius = rootMesh->boundingSphereRadius;
+		}
+		flopa->SetPosition(rndPos(20, 20));
+		flopa->SetRotation(Math::Quaternion::CreateFromYawPitchRoll(0.0f, Math::Pi / 2, 0.0f));
+		flopa->SetScale(Math::Vector3{ 0.005f });
+		flopa->Initialize();
+		player->sceneObjects.push_back(flopa);
+	}
+
+	/*{
 		player = new CompositeComponent(this);
 		CameraParamsPerspective perspective;
 		perspective.aspectRatio = (float)window->GetWidth() / window->GetHeigth();
@@ -121,7 +153,7 @@ void Game::LoadData()
 		flopa->SetScale(Math::Vector3{ 0.01f });
 		flopa->SetRotation(Math::Quaternion::CreateFromYawPitchRoll(0.0f, Math::Pi / 2, 0.0f));
 		flopa->Initialize();
-	}
+	}*/
 }
 
 void Game::UnloadData()

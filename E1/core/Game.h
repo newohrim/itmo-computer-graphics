@@ -15,6 +15,7 @@ class PaddleComponent;
 class Game {
 	friend Component::Component(Game*, Compositer*);
 	friend Component::~Component();
+	friend class PlayerBall; // TODO: remove this !!!
 
 public:
 	bool Initialize(const std::string name, int windowWidth, int windowHeight);

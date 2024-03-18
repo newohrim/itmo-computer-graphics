@@ -31,8 +31,14 @@ public:
 	Math::Vector3 GetForward() const override;
 	Math::Vector3 GetRight() const override;
 
-	const Math::Matrix& GetWorldTransform() const override { return worldTransform; }
-	void ComputeWorldTransform();
+	const Math::Matrix& GetWorldTransform(Compositer* parent = nullptr) override;
+	void SetWorldTransform(Math::Matrix matr);
+	void SetLocalTransform(Math::Matrix matr);
+	void ComputeWorldTransform(Compositer* parent = nullptr, bool recusive = true) override;
+	void TEMP_PendingComputeWT() { recomputeWorldTransform = true; }
+
+public:
+	float boundingSphereRadius = 0.0f;
 
 protected:
 	std::vector<Component*> children;
