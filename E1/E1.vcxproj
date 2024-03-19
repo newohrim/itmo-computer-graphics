@@ -147,6 +147,7 @@
     <ClCompile Include="components\FPSCamera.cpp" />
     <ClCompile Include="input\InputDevice.cpp" />
     <ClCompile Include="components\MeshComponent.cpp" />
+    <ClCompile Include="render\Mesh.cpp" />
     <ClCompile Include="render\Materials.cpp" />
     <ClCompile Include="render\MeshLoader.cpp" />
     <ClCompile Include="misc\Delegates.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="input\InputDevice.h" />
     <ClInclude Include="input\Keys.h" />
     <ClInclude Include="components\MeshComponent.h" />
+    <ClInclude Include="render\Mesh.h" />
     <ClInclude Include="render\Materials.h" />
     <ClInclude Include="render\MeshLoader.h" />
     <ClInclude Include="misc\Delegates.h" />

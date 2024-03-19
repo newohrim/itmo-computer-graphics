@@ -119,10 +119,10 @@ void Game::LoadData()
 
 	for (int i = 0; i < 25; ++i) {
 		CompositeComponent* flopa = new CompositeComponent(this);
-		MeshComponent* rootMesh = nullptr;
-		MeshLoader::LoadMesh("assets/flop.fbx", flopa, &rootMesh);
-		Texture tex(0, L"assets/flopTex.png", renderer.get());
+		const Mesh::PTR& mesh = renderer->GetMesh("assets/flop.fbx");
+		MeshComponent* rootMesh = MeshComponent::Build(mesh, flopa);
 		if (rootMesh) {
+			Texture tex(0, L"assets/flopTex.png", renderer.get());
 			rootMesh->SetTexture(tex);
 			// TODO: i feel really bad about this
 			flopa->boundingSphereRadius = rootMesh->boundingSphereRadius;

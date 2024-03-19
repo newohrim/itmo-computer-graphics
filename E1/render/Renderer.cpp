@@ -1,6 +1,8 @@
 #include "Renderer.h"
 
 #include "os/Window.h"
+#include "GeometryData.h"
+#include "MeshLoader.h"
 #include "TextureLoader.h"
 
 #include <d3d.h>
@@ -189,6 +191,21 @@ void Renderer::Draw()
 void Renderer::SetClearColor(float* color)
 {
 	memcpy(clearColor, color, sizeof(float) * 4);
+}
+
+const std::shared_ptr<Mesh>& Renderer::GetMesh(const std::string& path)
+{
+	auto iter = meshes.find(path);
+	if (iter != meshes.end()) {
+		return iter->second;
+	}
+	Mesh::PTR mesh;
+	if (!MeshLoader::LoadMesh(path, this, mesh)) {
+		return nullptr;
+	}
+	meshes[path] = mesh;
+
+	return meshes[path];
 }
 
 ID3D11ShaderResourceView* Renderer::GetTexture(const std::wstring& path)

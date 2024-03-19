@@ -24,5 +24,5 @@ public:
 
 private:
 	std::shared_ptr<Shader> linkedShader;
-	std::shared_ptr<GeometryData> geom;
+	std::shared_ptr<GeometryData> geom;  // TODO: remove geom?
 };

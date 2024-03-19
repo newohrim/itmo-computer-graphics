@@ -9,12 +9,9 @@
 #include <cassert>
 #include <functional>
 
-#include "components/CompositeComponent.h"
-#include "components/MeshComponent.h"
-#include "render/GeometryData.h"
-#include "core/Game.h"
-#include "render/Renderer.h"
-#include "render/RenderUtils.h"
+#include "GeometryData.h"
+#include "Renderer.h"
+#include "Mesh.h"
 
 #include <d3d11.h>
 
@@ -23,10 +20,8 @@
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "dxguid.lib")
 
-MeshComponent* CopyNodesWithMeshes(const aiScene* scene, aiNode* node, Compositer* targetParent, const aiMatrix4x4& accTransform, Game* game);
-void AddMesh(const aiScene* scene, int meshIdx, MeshComponent* meshComp);
 
-bool MeshLoader::LoadMesh(const std::string& path, CompositeComponent* parent, MeshComponent** outMesh)
+bool MeshLoader::LoadMesh(const std::string& path, Renderer* renderer, Mesh::PTR& outMesh)
 {
     // Create an instance of the Importer class
     Assimp::Importer importer;
@@ -50,62 +45,52 @@ bool MeshLoader::LoadMesh(const std::string& path, CompositeComponent* parent, M
 
     // Now we can access the file's contents.
     //DoTheSceneProcessing(scene);
-    MeshComponent* temp = CopyNodesWithMeshes(scene, scene->mRootNode, parent, aiMatrix4x4{}, parent->GetGame());
-    if (outMesh) {
-        // TODO: remove this temporal solution
-        *outMesh = temp;
-    }
+    outMesh = std::make_shared<Mesh>();
+    CopyNodesWithMeshes(scene, scene->mRootNode, outMesh->root, renderer, aiMatrix4x4{});
 
     // We're done. Everything will be cleaned up by the importer destructor
     return true;
 }
 
-MeshComponent* CopyNodesWithMeshes(const aiScene* scene, aiNode* node, Compositer* targetParent, const aiMatrix4x4& accTransform, Game* game) {
-    Compositer* parent;
+void MeshLoader::CopyNodesWithMeshes(const aiScene* scene, aiNode* node, Mesh::MeshNode& targetParent, Renderer* renderer, const aiMatrix4x4& accTransform) {
     aiMatrix4x4 transform;
-
-    MeshComponent* temp = nullptr;
 
     // if node has meshes, create a new scene object for it
     if (node->mNumMeshes > 0) {
         // copy the meshes
-        CompositeComponent* newObject = new CompositeComponent(game, targetParent);
         for (uint32_t i = 0; i < node->mNumMeshes; ++i) {
-            MeshComponent* newMesh = new MeshComponent(game, targetParent);
-            if (!temp) {
-                temp = newMesh;
-            }
-            AddMesh(scene, i, newMesh);
+            AddMesh(scene, i, renderer, targetParent);
         }
 
-        // the new object is the parent for all child nodes
-        parent = newObject;
-        //  transform.SetUnity();  wtf is this???
         aiVector3D pos;
         aiVector3D rotAxis;
         ai_real angle;
         aiVector3D scale;
+        // TODO: replace transform with node's transoform or accTransform???
         transform.Decompose(scale, rotAxis, angle, pos);
-        newObject->SetPosition(*reinterpret_cast<Math::Vector3*>(&pos));
+        targetParent.pos = *reinterpret_cast<Math::Vector3*>(&pos);
         if (rotAxis.SquareLength() > 0.99f) {
-            newObject->SetRotation(Math::Quaternion::CreateFromAxisAngle(
-                *reinterpret_cast<Math::Vector3*>(&rotAxis), angle));
+            targetParent.rot = Math::Quaternion::CreateFromAxisAngle(
+                *reinterpret_cast<Math::Vector3*>(&rotAxis), angle);
         }
-        newObject->SetPosition(*reinterpret_cast<Math::Vector3*>(&scale));
+        targetParent.scale = *reinterpret_cast<Math::Vector3*>(&scale);
     }
     else {
         // if no meshes, skip the node, but keep its transformation
-        parent = targetParent;
         transform = node->mTransformation * accTransform;
+        for (uint32_t i = 0; i < node->mNumChildren; ++i) {
+            aiNode* child = node->mChildren[i];
+            CopyNodesWithMeshes(scene, child, targetParent, renderer, transform);
+        }
+        return;
     }
 
     // continue for all child nodes
+    targetParent.children.resize(node->mNumChildren);
     for (uint32_t i = 0; i < node->mNumChildren; ++i) {
         aiNode* child = node->mChildren[i];
-        temp = CopyNodesWithMeshes(scene, child, parent, transform, game);
+        CopyNodesWithMeshes(scene, child, targetParent.children[i], renderer, transform);
     }
-
-    return temp;
 }
 
 struct MeshData {
@@ -223,17 +208,15 @@ MeshData GatherMeshData(const aiScene* scene, int meshIdx)
     return res;
 }
 
-void AddMesh(const aiScene* scene, int meshIdx, MeshComponent* meshComp)
+void MeshLoader::AddMesh(const aiScene* scene, int meshIdx, Renderer* renderer, Mesh::MeshNode& target)
 {
     MeshData mesh = GatherMeshData(scene, meshIdx);
     mesh.boundingSphereRadius = std::sqrt(mesh.boundingSphereRadius);
-    Renderer* renderer = meshComp->GetGame()->GetRenderer();
-    GeometryData::PTR geom = std::make_shared<GeometryData>(
+    // TODO: replace make_shared with emplace_back here if possible?
+    target.geoms.push_back(std::make_shared<GeometryData>(
         renderer->GetDevice(),
         static_cast<void*>(mesh.vertFloats.data()), (int)(sizeof(float) * mesh.vertFloats.size()),
         mesh.indices.data(), (int)(sizeof(uint32_t) * mesh.indices.size()),
-        std::vector<uint32_t>{mesh.stride}, std::vector<uint32_t>{0});
-    meshComp->SetGeometry(geom);
-    meshComp->SetShader(renderer->GetUtils()->GetAdvMeshShader(renderer));
-    // TODO: somehow use input layout from MeshData
+        std::vector<uint32_t>{mesh.stride}, std::vector<uint32_t>{0}));
+    // TODO: somehow use input layout from MeshData?
 }

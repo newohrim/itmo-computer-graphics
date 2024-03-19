@@ -6,6 +6,7 @@
 #include <string>
 #include "RenderUtils.h"
 #include "DrawComponent.h"
+#include "Mesh.h" // TODO: forward declare
 
 class Window;
 
@@ -35,6 +36,7 @@ public:
 	const Math::Matrix& GetViewMatrix() const { return viewMatr; }
 	void SetViewMatrix(const Math::Matrix& view) { viewMatr = view; }
 
+	const Mesh::PTR& GetMesh(const std::string& path);
 	ID3D11ShaderResourceView* GetTexture(const std::wstring& path);
 
 	Window* GetWindow() const { return window; }
@@ -51,6 +53,8 @@ private:
 	std::unique_ptr<RenderUtils> utils;
 
 	std::vector<DrawComponent*> components;
+
+	std::unordered_map<std::string, Mesh::PTR> meshes;
 
 	std::unordered_map<std::wstring, ID3D11ShaderResourceView*> textures;
 
