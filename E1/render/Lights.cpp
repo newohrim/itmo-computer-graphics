@@ -37,3 +37,34 @@ void DirectionalLight::UpdateBuffer(DefaultMeshMaterial::CBPS& buffer) const
 	buffer.dirLight.mSpecColor = specularColor;
 	buffer.dirLight.mDirection = Math::Vector4(parentRef->GetForward());
 }
+
+PointLight::PointLight(Renderer* renderer, Compositer* parent)
+	: Light(renderer, parent)
+{
+}
+
+void PointLight::UpdateBuffer(DefaultMeshMaterial::CBPS& buffer) const
+{
+	if (buffer.spotLightsNum >= DefaultMeshMaterial::NR_POINT_LIGHTS) {
+		return;
+	}
+
+	DefaultMeshMaterial::CBPS::PointLight& pointL = buffer.pointLights[buffer.spotLightsNum];
+	pointL.diffuse = color * intensity;
+	pointL.specular = specularColor;
+	pointL.position = Math::Vector4(parentRef->GetPosition());
+	switch (attenuation) {
+	case Constant:
+		pointL.constant = 1.0f;
+		break;
+	case Linear:
+		pointL.linear = 1.0f;
+		break;
+	case Quadratic:
+		pointL.quadratic = 1.0f;
+		break;
+	default:
+		assert(false);
+	}
+	buffer.spotLightsNum++;
+}

@@ -141,11 +141,13 @@
   <ItemGroup>
     <ClCompile Include="components\CameraComponent.cpp" />
     <ClCompile Include="components\CompositeComponent.cpp" />
+    <ClCompile Include="components\OrbiterComponent.cpp" />
     <ClCompile Include="components\ThirdPersonCamera.cpp" />
     <ClCompile Include="core\Component.cpp" />
     <ClCompile Include="core\Game.cpp" />
     <ClCompile Include="components\FPSCamera.cpp" />
     <ClCompile Include="components\DirectionalLightComponent.cpp" />
+    <ClCompile Include="components\PointLightComponent.cpp" />
     <ClCompile Include="render\Lights.cpp" />
     <ClCompile Include="materials\DefaultMeshMaterial.cpp" />
     <ClCompile Include="input\InputDevice.cpp" />
@@ -171,6 +173,7 @@
   <ItemGroup>
     <ClInclude Include="components\CameraComponent.h" />
     <ClInclude Include="components\CompositeComponent.h" />
+    <ClInclude Include="components\OrbiterComponent.h" />
     <ClInclude Include="components\ThirdPersonCamera.h" />
     <ClInclude Include="core\Component.h" />
     <ClInclude Include="core\Compositer.h" />
@@ -178,6 +181,7 @@
     <ClInclude Include="core\Math.h" />
     <ClInclude Include="components\FPSCamera.h" />
     <ClInclude Include="components\DirectionalLightComponent.h" />
+    <ClInclude Include="components\PointLightComponent.h" />
     <ClInclude Include="render\Lights.h" />
     <ClInclude Include="materials\DefaultMeshMaterial.h" />
     <ClInclude Include="input\InputDevice.h" />

@@ -15,12 +15,15 @@
 #include "render/RenderUtils.h"
 #include "render/Shader.h"
 #include "render/MeshLoader.h"
+#include "render/Lights.h"
 
 #include "components/CompositeComponent.h"
 #include "components/ThirdPersonCamera.h"
 #include "components/MeshComponent.h"
 #include "components/PlayerBall.h"
 #include "components/DirectionalLightComponent.h"
+#include "components/PointLightComponent.h"
+#include "components/OrbiterComponent.h"
 
 #include "input/InputDevice.h"
 
@@ -113,7 +116,45 @@ void Game::LoadData()
 	{
 		CompositeComponent* dirLightSocket = new CompositeComponent(this);
 		DirectionalLightComponent* dirLight = new DirectionalLightComponent(this, dirLightSocket);
+		dirLight->GetLightSource().SetColor(Math::Color(0.75, 0.75f, 0.75f));
 		dirLightSocket->SetRotation(Math::Quaternion::CreateFromYawPitchRoll(Math::Pi / 4.0f, -Math::Pi / 4.0f, 0.0f));
+	}
+
+	{
+		CompositeComponent* pointLightC = new CompositeComponent(this);
+		MeshComponent* mesh = new MeshComponent(this, pointLightC);
+		mesh->SetGeometry(GetRenderer()->GetUtils()->GetSphereGeom(renderer.get()));
+		mesh->SetColor(Math::Color{1.0f, 0.0f, 0.0f});
+		PointLightComponent* pointLight = new PointLightComponent(this, pointLightC);
+		pointLight->GetLightSource().SetColor(Math::Color{1.0f, 0.0f, 0.0f});
+		pointLight->GetLightSource().SetIntensity(25.0f);
+		OrbiterComponent* orbiter = new OrbiterComponent(this, pointLightC, Math::Vector3{0.0f, 0.0f, 2.5f}, 10.0f, -1.0f);
+		orbiter->SetMoveSpeed(1.0f);
+		pointLightC->SetScale(Math::Vector3{0.2f});
+	}
+	{
+		CompositeComponent* pointLightC = new CompositeComponent(this);
+		MeshComponent* mesh = new MeshComponent(this, pointLightC);
+		mesh->SetGeometry(GetRenderer()->GetUtils()->GetSphereGeom(renderer.get()));
+		mesh->SetColor(Math::Color{0.0f, 1.0f, 0.0f});
+		PointLightComponent* pointLight = new PointLightComponent(this, pointLightC);
+		pointLight->GetLightSource().SetColor(Math::Color{0.0f, 1.0f, 0.0f});
+		pointLight->GetLightSource().SetIntensity(25.0f);
+		OrbiterComponent* orbiter = new OrbiterComponent(this, pointLightC, Math::Vector3{0.0f, 0.0f, 2.5f}, 10.0f, -1.0f);
+		orbiter->SetMoveSpeed(1.0f);
+		pointLightC->SetScale(Math::Vector3{0.2f});
+	}
+	{
+		CompositeComponent* pointLightC = new CompositeComponent(this);
+		MeshComponent* mesh = new MeshComponent(this, pointLightC);
+		mesh->SetGeometry(GetRenderer()->GetUtils()->GetSphereGeom(renderer.get()));
+		mesh->SetColor(Math::Color{0.0f, 0.0f, 1.0f});
+		PointLightComponent* pointLight = new PointLightComponent(this, pointLightC);
+		pointLight->GetLightSource().SetColor(Math::Color{0.0f, 0.0f, 1.0f});
+		pointLight->GetLightSource().SetIntensity(25.0f);
+		OrbiterComponent* orbiter = new OrbiterComponent(this, pointLightC, Math::Vector3{0.0f, 0.0f, 2.5f}, 10.0f, -1.0f);
+		orbiter->SetMoveSpeed(1.0f);
+		pointLightC->SetScale(Math::Vector3{0.2f});
 	}
 
 	player = new PlayerBall(this);

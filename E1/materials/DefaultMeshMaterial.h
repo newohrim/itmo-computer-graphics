@@ -5,6 +5,8 @@
 
 class DefaultMeshMaterial : public Material {
 public:
+	static constexpr int NR_POINT_LIGHTS = 4;
+
 	struct CBVS {
 		Math::Matrix worldTransform;
 		Math::Matrix viewProj;
@@ -15,13 +17,23 @@ public:
 			Math::Color mDiffuseColor;
 			Math::Color mSpecColor;
 		} dirLight;
+		struct PointLight {
+			Math::Vector4 position;
+			Math::Vector4 diffuse;
+			Math::Vector4 specular;
+			float constant = 0.0f;
+			float linear = 0.0f;
+			float quadratic = 0.0f;
+			float _dummy = 0.0f;
+		};
+		PointLight pointLights[NR_POINT_LIGHTS];
 		Math::Color color;
 		Math::Vector4 uCameraPos;
 		Math::Color uAmbientLight;
 		float uSpecPower = 0.25f;
-		Math::Vector3 _dummy1;
-		bool isTextureSet = false;
-		Math::Vector3 _dummy2;
+		float uShininess = 32.0f;
+		int spotLightsNum = 0;
+		int isTextureSet = 0;
 	};
 
 	DefaultMeshMaterial(std::shared_ptr<Shader> shader);

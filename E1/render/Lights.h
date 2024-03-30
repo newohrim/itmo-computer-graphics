@@ -5,6 +5,7 @@
 
 #include "materials/DefaultMeshMaterial.h" // TODO: TEMP E2
 
+
 class Renderer;
 
 
@@ -34,4 +35,24 @@ public:
 	DirectionalLight(Renderer* renderer, Compositer* parent);
 
 	void UpdateBuffer(DefaultMeshMaterial::CBPS& buffer) const override;
+};
+
+
+class PointLight : public Light {
+public:
+	enum AttenuationType {
+		Constant = 0,
+		Linear,
+		Quadratic
+	};
+
+	PointLight(Renderer* renderer, Compositer* parent);
+
+	void UpdateBuffer(DefaultMeshMaterial::CBPS& buffer) const override;
+
+	void SetIntensity(float _intensity) { intensity = _intensity; }
+
+protected:
+	AttenuationType attenuation = Quadratic;
+	float intensity = 10.0f;
 };

@@ -6,6 +6,8 @@
 #include "render/Renderer.h"
 #include "render/MeshLoader.h"
 #include "os/Window.h"
+#include "components/PointLightComponent.h"
+#include "render/Lights.h"
 
 #include <iostream>
 
@@ -20,6 +22,10 @@ void PlayerBall::Initialize(Compositer* parent)
 	CameraParamsPerspective perspective;
 	perspective.aspectRatio = (float)GetGame()->GetWindow()->GetWidth() / GetGame()->GetWindow()->GetHeigth();
 	camera = new ThirdPersonCamera(GetGame(), perspective, this);
+
+	PointLightComponent* pointLight = new PointLightComponent(GetGame(), this);
+	pointLight->GetLightSource().SetColor(Math::Color{1.0f, 0.9f, 0.5f});
+	pointLight->GetLightSource().SetIntensity(10.0f);
 
 	Renderer* renderer = GetGame()->GetRenderer();
 	meshSocket = new CompositeComponent(GetGame(), this);
