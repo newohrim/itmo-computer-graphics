@@ -19,6 +19,9 @@ public:
 	void SetPitchSpeed(float speed) { mPitchSpeed = speed; }
 	void SetMaxPitch(float pitch) { mMaxPitch = pitch; }
 
+	float GetRadius() const { return radius; }
+	void SetRadius(float _radius) { radius = _radius; }
+
 	Math::Vector3 GetForwardVector(Compositer* parent) const override;
 
 	Math::Vector3 GetCameraPos() const;

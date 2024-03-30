@@ -8,7 +8,12 @@
 class IcoSphereCreator
 {
 public:
-    using MeshGeometry3D = std::vector<Math::Vector4>;
+    struct VertData {
+        Math::Vector3 pos;
+        Math::Vector3 normal;
+        Math::Vector2 uv = Math::Vector2::Zero;
+    };
+    using MeshGeometry3D = std::vector<VertData>;
 
     struct TriangleIndices
     {
@@ -27,14 +32,15 @@ public:
     std::unordered_map<int64_t, uint32_t> middlePointIndexCache;
 
     // add vertex to mesh, fix position to be on unit sphere, return index
-    uint32_t addVertex(Math::Vector4 p)
+    uint32_t addVertex(Math::Vector3 p)
     {
         const double length = std::sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+        const Math::Vector3 pos(p.x, p.y, p.z);
         if (length < 0.01) {
-            geometry.push_back(Math::Vector4(p.x, p.x, p.z, 1));
+            geometry.push_back({ pos });
             return index++;
         }
-        geometry.push_back(Math::Vector4(p.x / length, p.y / length, p.z / length, 1));
+        geometry.push_back({ pos / length });
         return index++;
     }
 
@@ -55,13 +61,12 @@ public:
         }
 
         // not in cache, calculate it
-        Math::Vector4 point1 = geometry[p1];
-        Math::Vector4 point2 = geometry[p2];
-        Math::Vector4 middle = Math::Vector4(
+        Math::Vector3 point1 = geometry[p1].pos;
+        Math::Vector3 point2 = geometry[p2].pos;
+        Math::Vector3 middle = Math::Vector3(
             (point1.x + point2.x) / 2.0,
             (point1.y + point2.y) / 2.0,
-            (point1.z + point2.z) / 2.0,
-            1);
+            (point1.z + point2.z) / 2.0);
 
         // add vertex makes sure point is on unit sphere
         uint32_t i = addVertex(middle);
@@ -79,21 +84,20 @@ public:
         // create 12 vertices of a icosahedron
         auto t = (1.0 + std::sqrt(5.0)) / 2.0;
 
-        addVertex(Math::Vector4(-1, t, 0, 1));
-        addVertex(Math::Vector4(1, t, 0, 1));
-        addVertex(Math::Vector4(-1, -t, 0, 1));
-        addVertex(Math::Vector4(1, -t, 0, 1));
+        addVertex(Math::Vector3(-1, t, 0));
+        addVertex(Math::Vector3(1, t, 0));
+        addVertex(Math::Vector3(-1, -t, 0));
+        addVertex(Math::Vector3(1, -t, 0));
 
-        addVertex(Math::Vector4(0, -1, t, 1));
-        addVertex(Math::Vector4(0, 1, t, 1));
-        addVertex(Math::Vector4(0, -1, -t, 1));
-        addVertex(Math::Vector4(0, 1, -t, 1));
+        addVertex(Math::Vector3(0, -1, t));
+        addVertex(Math::Vector3(0, 1, t));
+        addVertex(Math::Vector3(0, -1, -t));
+        addVertex(Math::Vector3(0, 1, -t));
 
-        addVertex(Math::Vector4(t, 0, -1, 1));
-        addVertex(Math::Vector4(t, 0, 1, 1));
-        addVertex(Math::Vector4(-t, 0, -1, 1));
-        addVertex(Math::Vector4(-t, 0, 1, 1));
-
+        addVertex(Math::Vector3(t, 0, -1));
+        addVertex(Math::Vector3(t, 0, 1));
+        addVertex(Math::Vector3(-t, 0, -1));
+        addVertex(Math::Vector3(-t, 0, 1));
 
         // create 20 triangles of the icosahedron
         auto faces = std::vector<TriangleIndices>();
@@ -143,6 +147,10 @@ public:
                 faces2.push_back({ a, b, c });
             }
             faces = std::move(faces2);
+        }
+        for (VertData& vert : geometry) {
+            vert.pos.Normalize();
+            vert.normal = vert.pos;
         }
 
         res.geometry = std::move(geometry);

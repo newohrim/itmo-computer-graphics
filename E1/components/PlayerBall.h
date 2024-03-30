@@ -14,5 +14,7 @@ public:
 	std::vector<CompositeComponent*> sceneObjects;
 
 protected:
+	class ThirdPersonCamera* camera = nullptr;
 	CompositeComponent* meshSocket = nullptr;
+	CompositeComponent* attachSocket = nullptr;
 };

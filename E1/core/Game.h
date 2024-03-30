@@ -11,6 +11,7 @@
 class Window;
 class Renderer;
 class PaddleComponent;
+class CameraComponent;
 
 class Game {
 	friend Component::Component(Game*, Compositer*);
@@ -31,6 +32,11 @@ public:
 
 	float GetDeltaTime() const { return deltaTime; }
 
+	class CompositeComponent* GetCameraHolder();
+
+	CameraComponent* GetActiveCamera() const { return camera; }
+	void SetActiveCamera(CameraComponent* cam) { camera = cam; }
+
 	Renderer* GetRenderer() const { return renderer.get(); }
 
 	Window* GetWindow() const { return window; }
@@ -47,7 +53,7 @@ private:
 
 	Window* window = nullptr;
 
-	class CompositeComponent* player = nullptr;
+	class PlayerBall* player = nullptr;
 	class CameraComponent* camera = nullptr;
 
 	std::chrono::time_point<std::chrono::steady_clock> prevTime;

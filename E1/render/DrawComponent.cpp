@@ -2,7 +2,7 @@
 
 #include "core/Game.h"
 #include "Renderer.h"
-#include "Shader.h"
+#include "Material.h"
 #include "GeometryData.h"
 
 #include <d3d11.h>
@@ -27,14 +27,14 @@ DrawComponent::~DrawComponent()
 
 void DrawComponent::Initialize(Compositer* parent)
 {
-	assert(linkedShader);
+	assert(material);
 	assert(geom);
 }
 
 void DrawComponent::Draw(Renderer* renderer)
 {
 	ID3D11DeviceContext* context = renderer->GetDeviceContext();
-	linkedShader->Activate(context);
+	material->Use(renderer);
 	geom->Activate(context);
 	context->DrawIndexed(geom->idxNum, 0, 0);
 }

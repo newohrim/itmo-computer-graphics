@@ -7,6 +7,7 @@ CameraComponent::CameraComponent(Game* game, const CameraParams& params, Composi
 	: Component(game, parent)
 	, projMatr(params.MakeProjectionMatrix())
 {
+	game->SetActiveCamera(this);
 }
 
 void CameraComponent::SetViewMatrix(const Math::Matrix& view)

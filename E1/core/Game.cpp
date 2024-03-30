@@ -109,7 +109,7 @@ void Game::LoadData()
 		return Math::Color(rndFloat(), rndFloat(), rndFloat());
 	};
 
-	PlayerBall* player = new PlayerBall(this);
+	player = new PlayerBall(this);
 	player->Initialize();
 
 	/*CompositeComponent* temp = new CompositeComponent(this);
@@ -130,6 +130,22 @@ void Game::LoadData()
 		flopa->SetPosition(rndPos(20, 20));
 		flopa->SetRotation(Math::Quaternion::CreateFromYawPitchRoll(0.0f, Math::Pi / 2, 0.0f));
 		flopa->SetScale(Math::Vector3{ 0.005f });
+		flopa->Initialize();
+		player->sceneObjects.push_back(flopa);
+	}
+	for (int i = 0; i < 25; ++i) {
+		CompositeComponent* flopa = new CompositeComponent(this);
+		const Mesh::PTR& mesh = renderer->GetMesh("assets/cheese.fbx");
+		MeshComponent* rootMesh = MeshComponent::Build(mesh, flopa);
+		if (rootMesh) {
+			Texture tex(0, L"assets/cheeseTex.jpg", renderer.get());
+			rootMesh->SetTexture(tex);
+			// TODO: i feel really bad about this
+			flopa->boundingSphereRadius = rootMesh->boundingSphereRadius;
+		}
+		flopa->SetPosition(rndPos(20, 20));
+		//flopa->SetRotation(Math::Quaternion::CreateFromYawPitchRoll(Math::Pi / 2, 0.0f, 0.0f));
+		//flopa->SetScale(Math::Vector3{ 1.0f });
 		flopa->Initialize();
 		player->sceneObjects.push_back(flopa);
 	}
@@ -203,6 +219,11 @@ void Game::UpdateGame()
 void Game::GenerateOutput()
 {
 	renderer->Draw();
+}
+
+CompositeComponent* Game::GetCameraHolder()
+{
+	return static_cast<CompositeComponent*>(player);
 }
 
 void Game::AddComponent(Component* comp)

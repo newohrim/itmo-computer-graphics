@@ -11,18 +11,18 @@
 QuadComponent::QuadComponent(Game* game, Compositer* compositer)
 	: DrawComponent(game, compositer)
 {
-	Renderer* renderer = GetGame()->GetRenderer();
+	/*Renderer* renderer = GetGame()->GetRenderer();
 	GeometryData::PTR geom = renderer->GetUtils()->GetQuadGeom(renderer);
 	SetGeometry(geom);
 	Shader::PTR shader = renderer->GetUtils()->GetQuadShader(renderer);
-	SetShader(shader);
+	SetShader(shader);*/
 }
 
 void QuadComponent::Draw(Renderer* renderer)
 {
 	using namespace Math;
 
-	auto shader = GetShader();
+	/*auto shader = GetShader();
 	auto context = renderer->GetDeviceContext();
 	auto window = renderer->GetWindow();
 	const Vector2 pos = parentRef ? Vector2{parentRef->GetPosition().x, parentRef->GetPosition().y} : Vector2{ 0.0f, 0.0f };
@@ -36,5 +36,5 @@ void QuadComponent::Draw(Renderer* renderer)
 	cbPS.color = color;
 	shader.lock()->SetCBVS(context, 0, &cbVS);
 	shader.lock()->SetCBPS(context, 0, &cbPS);
-	DrawComponent::Draw(renderer);
+	DrawComponent::Draw(renderer);*/
 }

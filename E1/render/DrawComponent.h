@@ -6,7 +6,7 @@
 
 class Renderer;
 
-struct Shader;
+class Material;
 struct GeometryData;
 
 class DrawComponent : public Component
@@ -18,11 +18,11 @@ public:
 	void Initialize(Compositer* parent = nullptr) override;
 	virtual void Draw(Renderer* renderer);
 
-	std::weak_ptr<Shader> GetShader() const { return linkedShader; }
-	void SetShader(const std::shared_ptr<Shader> shader) { linkedShader = shader; }
+	std::weak_ptr<Material> GetMaterial() const { return material; }
+	void SetMaterial(const std::shared_ptr<Material> _material) { material = _material; }
 	void SetGeometry(const std::shared_ptr<GeometryData> _geom) { geom = _geom; }
 
 private:
-	std::shared_ptr<Shader> linkedShader;
+	std::shared_ptr<Material> material;
 	std::shared_ptr<GeometryData> geom;  // TODO: remove geom?
 };

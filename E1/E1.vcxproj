@@ -145,8 +145,10 @@
     <ClCompile Include="core\Component.cpp" />
     <ClCompile Include="core\Game.cpp" />
     <ClCompile Include="components\FPSCamera.cpp" />
+    <ClCompile Include="materials\DefaultMeshMaterial.cpp" />
     <ClCompile Include="input\InputDevice.cpp" />
     <ClCompile Include="components\MeshComponent.cpp" />
+    <ClCompile Include="render\Material.cpp" />
     <ClCompile Include="render\Mesh.cpp" />
     <ClCompile Include="render\Materials.cpp" />
     <ClCompile Include="render\MeshLoader.cpp" />
@@ -173,9 +175,11 @@
     <ClInclude Include="core\Game.h" />
     <ClInclude Include="core\Math.h" />
     <ClInclude Include="components\FPSCamera.h" />
+    <ClInclude Include="materials\DefaultMeshMaterial.h" />
     <ClInclude Include="input\InputDevice.h" />
     <ClInclude Include="input\Keys.h" />
     <ClInclude Include="components\MeshComponent.h" />
+    <ClInclude Include="render\Material.h" />
     <ClInclude Include="render\Mesh.h" />
     <ClInclude Include="render\Materials.h" />
     <ClInclude Include="render\MeshLoader.h" />

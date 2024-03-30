@@ -6,29 +6,48 @@
 #include "render/Shader.h"
 #include "render/GeometryData.h"
 #include "CompositeComponent.h"
+#include "materials/DefaultMeshMaterial.h"
+#include "components/ThirdPersonCamera.h"
 
 MeshComponent::MeshComponent(Game* game, Compositer* parent)
 	: DrawComponent(game, parent)
 	, parent(parent)
 {
+	auto mat = std::make_shared<DefaultMeshMaterial>(GetGame()->GetRenderer()->GetUtils()->GetAdvMeshShader(GetGame()->GetRenderer(), sizeof(DefaultMeshMaterial::CBVS), sizeof(DefaultMeshMaterial::CBPS)));
+	SetMaterial(mat);
 }
 
 void MeshComponent::Draw(Renderer* renderer)
 {
-	auto shader = GetShader();
+	auto material = GetMaterial().lock();
+	auto shader = material->GetShader();
 	auto context = renderer->GetDeviceContext();
 	auto window = renderer->GetWindow();
-	auto cbVS = RenderUtils::MeshCBVS{};
+	auto cbVS = DefaultMeshMaterial::CBVS{};
 	cbVS.worldTransform = parent->GetWorldTransform().Transpose();
 	cbVS.viewProj = renderer->GetViewMatrix();
-	auto cbPS = RenderUtils::QuadCBPS{};
+	auto cbPS = DefaultMeshMaterial::CBPS{};
 	cbPS.color = color;
-	shader.lock()->SetCBVS(context, 0, &cbVS);
-	shader.lock()->SetCBPS(context, 0, &cbPS);
+	cbPS.uAmbientLight = Math::Color{0.0f, 0.0f, 0.0f};
+	ThirdPersonCamera* cam = static_cast<ThirdPersonCamera*>(GetGame()->GetActiveCamera());
+	cbPS.uCameraPos = Math::Vector4(cam->GetCameraPos());
+	cbPS.uSpecPower = 0.0f;
+	cbPS.dirLight.mDiffuseColor = Math::Color{1.0f, 1.0f, 1.0f};
+	cbPS.dirLight.mDirection = Math::Vector4{0.35f, 0.35f, -1.0f, 0.0f};
+	cbPS.dirLight.mDirection.Normalize();
+	cbPS.dirLight.mSpecColor = Math::Color{1.0f, 1.0f, 1.0f};
+	cbPS.isTextureSet = false;
 	if (tex.IsValid()) {
 		tex.Activate(context);
+		cbPS.isTextureSet = true;
 	}
-	shader.lock()->Activate(context);
+	else {
+		//__debugbreak();
+	}
+	shader.SetCBVS(context, 0, &cbVS);
+	shader.SetCBPS(context, 0, &cbPS);
+	
+	//shader.lock()->Activate(context);
 	DrawComponent::Draw(renderer);
 }
 
@@ -50,7 +69,8 @@ MeshComponent* MeshComponent::BuildMeshNode(const Mesh::MeshNode& node, Composit
 	for (const GeometryData::PTR& geom : node.geoms) {
 		MeshComponent* meshComp = new MeshComponent(parent->GetGame(), parent);
 		meshComp->SetGeometry(geom);
-		meshComp->SetShader(renderer->GetUtils()->GetAdvMeshShader(renderer));
+		//auto mat = std::make_shared<DefaultMeshMaterial>(parent->GetGame()->GetRenderer()->GetUtils()->GetAdvMeshShader(parent->GetGame()->GetRenderer(), sizeof(DefaultMeshMaterial::CBVS), sizeof(DefaultMeshMaterial::CBPS)));
+		//meshComp->SetMaterial(mat);
 		if (!tempRes) {
 			tempRes = meshComp;
 		}
