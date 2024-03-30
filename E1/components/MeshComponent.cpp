@@ -28,14 +28,15 @@ void MeshComponent::Draw(Renderer* renderer)
 	cbVS.viewProj = renderer->GetViewMatrix();
 	auto cbPS = DefaultMeshMaterial::CBPS{};
 	cbPS.color = color;
-	cbPS.uAmbientLight = Math::Color{0.0f, 0.0f, 0.0f};
+	cbPS.uAmbientLight = Math::Color{0.2f, 0.2f, 0.2f};
 	ThirdPersonCamera* cam = static_cast<ThirdPersonCamera*>(GetGame()->GetActiveCamera());
 	cbPS.uCameraPos = Math::Vector4(cam->GetCameraPos());
-	cbPS.uSpecPower = 0.0f;
-	cbPS.dirLight.mDiffuseColor = Math::Color{1.0f, 1.0f, 1.0f};
+	cbPS.uSpecPower = 1.0f;
+	/*cbPS.dirLight.mDiffuseColor = Math::Color{1.0f, 1.0f, 1.0f};
 	cbPS.dirLight.mDirection = Math::Vector4{0.35f, 0.35f, -1.0f, 0.0f};
 	cbPS.dirLight.mDirection.Normalize();
-	cbPS.dirLight.mSpecColor = Math::Color{1.0f, 1.0f, 1.0f};
+	cbPS.dirLight.mSpecColor = Math::Color{1.0f, 1.0f, 1.0f};*/
+	renderer->PopulateLightsBuffer(cbPS); // TODO: TEMP E2
 	cbPS.isTextureSet = false;
 	if (tex.IsValid()) {
 		tex.Activate(context);

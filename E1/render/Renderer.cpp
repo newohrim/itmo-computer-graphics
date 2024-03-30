@@ -4,6 +4,7 @@
 #include "GeometryData.h"
 #include "MeshLoader.h"
 #include "TextureLoader.h"
+#include "Lights.h"
 
 #include <d3d.h>
 #include <d3d11.h>
@@ -193,6 +194,13 @@ void Renderer::SetClearColor(float* color)
 	memcpy(clearColor, color, sizeof(float) * 4);
 }
 
+void Renderer::PopulateLightsBuffer(DefaultMeshMaterial::CBPS& buffer) const
+{
+	for (const Light* light : lightSources) {
+		light->UpdateBuffer(buffer);
+	}
+}
+
 const std::shared_ptr<Mesh>& Renderer::GetMesh(const std::string& path)
 {
 	auto iter = meshes.find(path);
@@ -236,6 +244,22 @@ void Renderer::RemoveComponent(DrawComponent* comp)
 	{
 		std::iter_swap(iter, components.end() - 1);
 		components.pop_back();
+		return;
+	}
+}
+
+void Renderer::AddLight(Light* light)
+{
+	lightSources.push_back(light);
+}
+
+void Renderer::RemoveLight(Light* light)
+{
+	auto iter = std::find(lightSources.begin(), lightSources.end(), light);
+	if (iter != lightSources.end())
+	{
+		std::iter_swap(iter, lightSources.end() - 1);
+		lightSources.pop_back();
 		return;
 	}
 }

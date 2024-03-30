@@ -145,6 +145,8 @@
     <ClCompile Include="core\Component.cpp" />
     <ClCompile Include="core\Game.cpp" />
     <ClCompile Include="components\FPSCamera.cpp" />
+    <ClCompile Include="components\DirectionalLightComponent.cpp" />
+    <ClCompile Include="render\Lights.cpp" />
     <ClCompile Include="materials\DefaultMeshMaterial.cpp" />
     <ClCompile Include="input\InputDevice.cpp" />
     <ClCompile Include="components\MeshComponent.cpp" />
@@ -175,6 +177,8 @@
     <ClInclude Include="core\Game.h" />
     <ClInclude Include="core\Math.h" />
     <ClInclude Include="components\FPSCamera.h" />
+    <ClInclude Include="components\DirectionalLightComponent.h" />
+    <ClInclude Include="render\Lights.h" />
     <ClInclude Include="materials\DefaultMeshMaterial.h" />
     <ClInclude Include="input\InputDevice.h" />
     <ClInclude Include="input\Keys.h" />

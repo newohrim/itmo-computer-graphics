@@ -20,6 +20,7 @@
 #include "components/ThirdPersonCamera.h"
 #include "components/MeshComponent.h"
 #include "components/PlayerBall.h"
+#include "components/DirectionalLightComponent.h"
 
 #include "input/InputDevice.h"
 
@@ -108,6 +109,12 @@ void Game::LoadData()
 		auto rndFloat = []() { return (float)rand() / RAND_MAX; };
 		return Math::Color(rndFloat(), rndFloat(), rndFloat());
 	};
+	
+	{
+		CompositeComponent* dirLightSocket = new CompositeComponent(this);
+		DirectionalLightComponent* dirLight = new DirectionalLightComponent(this, dirLightSocket);
+		dirLightSocket->SetRotation(Math::Quaternion::CreateFromYawPitchRoll(Math::Pi / 4.0f, -Math::Pi / 4.0f, 0.0f));
+	}
 
 	player = new PlayerBall(this);
 	player->Initialize();

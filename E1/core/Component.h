@@ -1,9 +1,12 @@
 #pragma once
 
+#include "Compositer.h"
+
 class Game;
-template<typename>
-class Compositer_T;
-using Compositer = Compositer_T<class Component>;
+class Component;
+//template<typename, typename>
+//class Compositer_T;
+using Compositer = Compositer_T<Component>;
 
 class Component
 {

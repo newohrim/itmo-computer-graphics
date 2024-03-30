@@ -6,9 +6,11 @@
 #include <string>
 #include "RenderUtils.h"
 #include "DrawComponent.h"
+#include "materials/DefaultMeshMaterial.h" // TODO: TEMP E1
 #include "Mesh.h" // TODO: forward declare
 
 class Window;
+class Light;
 
 struct ID3D11Device;
 struct ID3D11DeviceContext;
@@ -23,6 +25,7 @@ struct ID3D11DepthStencilState;
 class Renderer {
 	friend DrawComponent::DrawComponent(Game*, Compositer*);
 	friend DrawComponent::~DrawComponent();
+	friend class Light;
 
 public:
 	bool Initialize(Window* window);
@@ -32,6 +35,8 @@ public:
 	void Draw();
 
 	void SetClearColor(float* color);
+
+	void PopulateLightsBuffer(DefaultMeshMaterial::CBPS& buffer) const;
 
 	const Math::Matrix& GetViewMatrix() const { return viewMatr; }
 	void SetViewMatrix(const Math::Matrix& view) { viewMatr = view; }
@@ -49,6 +54,9 @@ private:
 	void AddComponent(DrawComponent* comp);
 	void RemoveComponent(DrawComponent* comp);
 
+	void AddLight(Light* light);
+	void RemoveLight(Light* light);
+
 private:
 	std::unique_ptr<RenderUtils> utils;
 
@@ -57,6 +65,8 @@ private:
 	std::unordered_map<std::string, Mesh::PTR> meshes;
 
 	std::unordered_map<std::wstring, ID3D11ShaderResourceView*> textures;
+
+	std::vector<Light*> lightSources;
 
 	Window* window = nullptr;
 
