@@ -85,6 +85,16 @@ std::shared_ptr<GeometryData> RenderUtils::GetSphereGeom(Renderer* renderer)
 	return sphereGeom;
 }
 
+std::shared_ptr<GeometryData> RenderUtils::GetPlaneGeom(Renderer* renderer)
+{
+	if (planeGeom) {
+		return planeGeom;
+	}
+
+	planeGeom = CreatePlaneGeom(renderer);
+	return planeGeom;
+}
+
 std::shared_ptr<Shader> RenderUtils::CreateQuadShader(Renderer* renderer)
 {
 	const D3D11_INPUT_ELEMENT_DESC inputElements[] = {
@@ -259,5 +269,21 @@ std::shared_ptr<GeometryData> RenderUtils::CreateSphereGeom(Renderer* renderer)
 		renderer->GetDevice(),
 		static_cast<void*>(geom.geometry.data()), (int)(sizeof(IcoSphereCreator::VertData) * geom.geometry.size()),
 		reinterpret_cast<uint32_t*>(geom.indices.data()), (int)(sizeof(uint32_t) * geom.indices.size() * 3),
+		std::vector<uint32_t>{ 32 }, std::vector<uint32_t>{0});
+}
+
+std::shared_ptr<GeometryData> RenderUtils::CreatePlaneGeom(Renderer* renderer)
+{
+	const float points[] = {
+		0.5f, 0.5f, 0.0f,   0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+		0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+		-0.5f, 0.5f, 0.0f,  0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+	};
+	const uint32_t indices[] = { 0,1,2, 1,0,3 };
+	return std::make_shared<GeometryData>(
+		renderer->GetDevice(),
+		points, (int)(sizeof(float) * std::size(points)),
+		indices, (int)(sizeof(uint32_t) * std::size(indices)),
 		std::vector<uint32_t>{ 32 }, std::vector<uint32_t>{0});
 }

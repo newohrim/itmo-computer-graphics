@@ -31,6 +31,8 @@ protected:
 	struct ID3D11RenderTargetView* rtv;
 	struct ID3D11DepthStencilState* depthState;
 	struct ID3D11ShaderResourceView* depthShaderRes;
+	struct ID3D11RasterizerState* cullFront;
+	struct ID3D11RasterizerState* cullBack;
 
 public:
 	static void SetCBVS(struct ID3D11DeviceContext* context, int slot, void* data);

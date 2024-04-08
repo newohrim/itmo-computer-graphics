@@ -123,14 +123,22 @@ float4 PSMain( PS_IN input ) : SV_Target
 	// perform perspective divide
 	float3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 	// transform to [0,1] range
-	projCoords = projCoords * 0.5 + 0.5;
+	projCoords.xy = projCoords.xy * 0.5 + 0.5;
+	//projCoords = projCoords * 0.5 + 0.5;
+	projCoords.y = 1.0 - projCoords.y;
 		
+	// PCF
+	float shadow = 0.0;
 	// get depth of current fragment from light's perspective
 	float currentDepth = projCoords.z;
+	//return float4(currentDepth, currentDepth, currentDepth, 1.0);
+	/*
 	if (currentDepth  > 1.0)
 	{
-		return 0.0;
+		shadow 0.0;
 	}
+	*/
+	//return float4(currentDepth, currentDepth, currentDepth, 1.0);
 	// calculate bias (based on depth map resolution and slope)
 	float bias = max(0.05 * (1.0 - dot(N, L)), 0.005);
 	if (layer == NR_CASCADES)
@@ -143,10 +151,10 @@ float4 PSMain( PS_IN input ) : SV_Target
 		bias *= 1 / (cascadePlaneDistances[layer] * 0.5f);
 	}
 
-	// PCF
-	float shadow = 0.0;
+	
 	//float2 texelSize = 1.0 / float2(textureSize(shadowMap, 0));
 	float2 texelSize = 1.0 / float2(2000.0, 2000.0);
+	//return float4(projCoords.xz, 0.0, 1.0);
 	for(int x = -1; x <= 1; ++x)
 	{
 		for(int y = -1; y <= 1; ++y)
@@ -154,11 +162,13 @@ float4 PSMain( PS_IN input ) : SV_Target
 			float pcfDepth = shadowMap.Sample(samplerState,
 						float3(projCoords.xy + float2(x, y) * texelSize,
 						layer)
-						).r; 
+						).r;
 			shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;        
 		}    
 	}
 	shadow /= 9.0;
+	//return float4(shadow, shadow, shadow, 1.0);
+
 		
 	// keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
 	if(projCoords.z > 1.0)
@@ -179,7 +189,7 @@ float4 PSMain( PS_IN input ) : SV_Target
 	}
 	
 	float4 col = color;
-	float4 texVal = 0;
+	float4 texVal = color;
 	if (isTextureSet == 1) {
 		col = texVal = tex.Sample(samplerState, input.uv);
 	}

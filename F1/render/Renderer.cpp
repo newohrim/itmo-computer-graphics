@@ -79,7 +79,6 @@ bool Renderer::Initialize(Window* _window)
 	rastDesc.FillMode = D3D11_FILL_SOLID;
 
 	res = device->CreateRasterizerState(&rastDesc, &rastState);
-	context->RSSetState(rastState);
 
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -176,6 +175,8 @@ void Renderer::Draw()
 	viewport.MaxDepth = 1.0f;
 
 	context->RSSetViewports(1, &viewport);
+
+	context->RSSetState(rastState);
 
 	context->OMSetRenderTargets(1, &rtv, depthBuffer);
 

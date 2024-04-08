@@ -35,8 +35,11 @@ void MeshComponent::Draw(Renderer* renderer, bool geomOnly)
 		return;
 	}
 	auto cbPS = DefaultMeshMaterial::CBPS{};
+	const float step = (100.0f - 0.5f) * (1.0f / DefaultMeshMaterial::NR_CASCADES);
 	for (int i = 0; i < DefaultMeshMaterial::NR_CASCADES; ++i) {
-		cbPS.cascadePlaneDistances[i] = (100.0f / DefaultMeshMaterial::NR_CASCADES) * (i + 1);
+		const float nearPlane = 0.5f + i * step;
+		const float farPlane = nearPlane + step;
+		cbPS.cascadePlaneDistances[i] = farPlane;
 	}
 	cbPS.viewMatr = renderer->GetViewMatrix().Transpose();
 	cbPS.color = color;

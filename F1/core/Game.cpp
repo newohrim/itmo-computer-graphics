@@ -117,7 +117,15 @@ void Game::LoadData()
 		CompositeComponent* dirLightSocket = new CompositeComponent(this);
 		DirectionalLightComponent* dirLight = new DirectionalLightComponent(this, dirLightSocket);
 		dirLight->GetLightSource().SetColor(Math::Color(0.75, 0.75f, 0.75f));
-		dirLightSocket->SetRotation(Math::Quaternion::CreateFromYawPitchRoll(Math::Pi / 4.0f, -Math::Pi / 4.0f, 0.0f));
+		dirLightSocket->SetRotation(Math::Quaternion::CreateFromYawPitchRoll(Math::Pi / 4.0f, 0.0f, Math::Pi / 4.0f));
+	}
+
+	{
+		CompositeComponent* planeSocket = new CompositeComponent(this);
+		MeshComponent* planeMesh = new MeshComponent(this, planeSocket);
+		planeMesh->SetGeometry(GetRenderer()->GetUtils()->GetPlaneGeom(renderer.get()));
+		planeSocket->SetPosition(Math::Vector3{0.0f, 0.0f, -2.0f});
+		planeSocket->SetScale(Math::Vector3(250.0f));
 	}
 
 	{
@@ -176,6 +184,7 @@ void Game::LoadData()
 			flopa->boundingSphereRadius = rootMesh->boundingSphereRadius;
 		}
 		flopa->SetPosition(rndPos(100, 100));
+		flopa->SetPosition(flopa->GetPosition() + Math::Vector3::UnitZ * 0.5f);
 		flopa->SetRotation(Math::Quaternion::CreateFromYawPitchRoll(0.0f, Math::Pi / 2, 0.0f));
 		flopa->SetScale(Math::Vector3{ 0.005f });
 		flopa->Initialize();

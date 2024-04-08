@@ -33,6 +33,12 @@ void PlayerBall::Initialize(Compositer* parent)
 	//mesh->SetShader(GetGame()->GetRenderer()->GetUtils()->GetMeshShader(renderer));
 	mesh->SetGeometry(GetGame()->GetRenderer()->GetUtils()->GetSphereGeom(renderer));
 
+	testSocket = new CompositeComponent(GetGame(), this);
+	//MeshComponent* testMesh = new MeshComponent(GetGame(), testSocket);
+	//mesh->SetShader(GetGame()->GetRenderer()->GetUtils()->GetMeshShader(renderer));
+	//testMesh->SetGeometry(GetGame()->GetRenderer()->GetUtils()->GetSphereGeom(renderer));
+	//testSocket->SetPosition(camera->GetCameraPos());
+
 	CompositeComponent* tempC = new CompositeComponent(GetGame(), meshSocket);
 	MeshComponent* cube = new MeshComponent(GetGame(), tempC);
 	//cube->SetShader(GetGame()->GetRenderer()->GetUtils()->GetMeshShader(renderer));
@@ -63,6 +69,7 @@ void PlayerBall::ProceedInput(InputDevice* inpDevice)
 	if (moveVec.LengthSquared() < 0.001f) {
 		return;
 	}
+	testSocket->SetPosition(camera->GetCameraPos() - GetPosition() - Math::Vector3::UnitX);
 	const float moveDist = moveVec.Length();
 	moveVec.Normalize();
 	const Math::Vector3 up = {0.0f, 0.0f, 1.0f};

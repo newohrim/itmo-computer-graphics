@@ -35,6 +35,7 @@ public:
 	std::shared_ptr<Shader> GetAdvMeshShader(Renderer* renderer, int cbVSSize, int cbPSSize);
 	std::shared_ptr<GeometryData> GetCubeGeom(Renderer* renderer);
 	std::shared_ptr<GeometryData> GetSphereGeom(Renderer* renderer);
+	std::shared_ptr<GeometryData> GetPlaneGeom(Renderer* renderer);
 
 private:
 	std::shared_ptr<Shader> CreateQuadShader(Renderer* renderer);
@@ -43,6 +44,7 @@ private:
 	std::shared_ptr<Shader> CreateAdvMeshShader(Renderer* renderer, int cbVSSize, int cbPSSize);
 	std::shared_ptr<GeometryData> CreateCubeGeom(Renderer* renderer);
 	std::shared_ptr<GeometryData> CreateSphereGeom(Renderer* renderer);
+	std::shared_ptr<GeometryData> CreatePlaneGeom(Renderer* renderer);
 
 private:
 	std::shared_ptr<Shader> quadShader;
@@ -51,4 +53,5 @@ private:
 	std::shared_ptr<Shader> meshAdvShader;
 	std::shared_ptr<GeometryData> cubeGeom;
 	std::shared_ptr<GeometryData> sphereGeom;
+	std::shared_ptr<GeometryData> planeGeom;
 };

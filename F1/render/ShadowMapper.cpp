@@ -23,7 +23,7 @@ static constexpr float ASPECT_RATIO = 800.0f / 800.0f;
 static constexpr float NEAR_PLANE = 0.5f;
 static constexpr float FAR_PLANE = 100.0f;
 static constexpr float ZMULT = 10.0f;
-static const Math::Vector3 LIGHT_DIR = Math::Vector3::Transform(Math::Vector3::UnitX, Math::Quaternion::CreateFromYawPitchRoll(Math::Pi / 4.0f, -Math::Pi / 4.0f, 0.0f));
+static const Math::Vector3 LIGHT_DIR = Math::Vector3::Transform(Math::Vector3::UnitX, Math::Quaternion::CreateFromYawPitchRoll(Math::Pi / 4.0f, 0.0f, Math::Pi / 4.0f));
 
 ID3D11Buffer* ShadowMapper::cbVSBuf{nullptr};
 ID3D11Buffer* ShadowMapper::cbGSBuf{nullptr};
@@ -37,11 +37,17 @@ std::vector<Math::Vector4> GetFrustumCornersWorldSpace(const Math::Matrix& proj,
     for (uint32_t x = 0; x < 2; ++x) {
         for (uint32_t y = 0; y < 2; ++y) {
             for (uint32_t z = 0; z < 2; ++z) {
+                /*const auto test = Math::Vector4(
+                    2.0f * x - 1.0f,
+                    2.0f * y - 1.0f,
+                    2.0f * z - 1.0f,
+                    1.0f
+                );*/
                 const Math::Vector4 pt = Math::Vector4::Transform(
                     Math::Vector4(
                         2.0f * x - 1.0f,
                         2.0f * y - 1.0f,
-                        2.0f * z - 1.0f,
+                        /*2.0f * z - 1.0f*/(float)z,
                         1.0f
                     ), 
                     inv);
@@ -259,6 +265,22 @@ ShadowMapper::ShadowMapper(Renderer* renderer)
     //create the shader resource view.
     renderer->GetDevice()->CreateShaderResourceView(dsTexutre, &shaderResourceViewDesc, &depthShaderRes);
 
+    {
+        CD3D11_RASTERIZER_DESC rastDesc = {};
+        rastDesc.CullMode = D3D11_CULL_FRONT;
+        rastDesc.FillMode = D3D11_FILL_SOLID;
+        /*rastDesc.DepthBias = 1.f;
+        rastDesc.DepthBiasClamp = 0.05f;
+        rastDesc.SlopeScaledDepthBias = 0.05f;*/
+        res = renderer->GetDevice()->CreateRasterizerState(&rastDesc, &cullFront);
+    }
+    {
+        CD3D11_RASTERIZER_DESC rastDesc = {};
+        rastDesc.CullMode = D3D11_CULL_BACK;
+        rastDesc.FillMode = D3D11_FILL_SOLID;
+        res = renderer->GetDevice()->CreateRasterizerState(&rastDesc, &cullBack);
+    }
+
     renderer->GetDevice()->CreateBuffer(&cbVSDescs[0], nullptr, &cbVSBuf);
     renderer->GetDevice()->CreateBuffer(&cbGSDescs[0], nullptr, &cbGSBuf);
     renderer->GetDevice()->CreateBuffer(&cbGSDescs[0], nullptr, &cbPSBuf);
@@ -270,6 +292,8 @@ void ShadowMapper::CastShadows(Renderer* renderer)
     CBGS cbGS;
 
     const float step = (FAR_PLANE - NEAR_PLANE) * (1.0f / CASCADES_COUNT);
+    Math::Vector3 ldNorm = LIGHT_DIR;
+    ldNorm.Normalize();
     for (int i = 0; i < CASCADES_COUNT; ++i) {
         const float nearPlane = NEAR_PLANE + i * step;
         const float farPlane = nearPlane + step;
@@ -284,7 +308,7 @@ void ShadowMapper::CastShadows(Renderer* renderer)
 
         const auto lightView = Math::Matrix::CreateLookAt(
             center,
-            center + LIGHT_DIR,
+            center + ldNorm,
             Math::Vector3(0.0f, 0.0f, 1.0f)
         );
 
@@ -296,12 +320,13 @@ void ShadowMapper::CastShadows(Renderer* renderer)
         float maxZ = std::numeric_limits<float>::lowest();
         for (const auto& v : corners) {
             const auto trf = Math::Vector4::Transform(v, lightView);
-            minX = std::min(minX, trf.x);
-            maxX = std::max(maxX, trf.x);
+            // my coordinates are fucked up :)
+            minX = std::min(minX, -trf.y);
+            maxX = std::max(maxX, -trf.y);
             minY = std::min(minY, trf.z);
             maxY = std::max(maxY, trf.z);
-            minZ = std::min(minZ, trf.y);
-            maxZ = std::max(maxZ, trf.y);
+            minZ = std::min(minZ, trf.x);
+            maxZ = std::max(maxZ, trf.x);
         }
         if (minZ < 0) {
             minZ *= ZMULT;
@@ -314,7 +339,8 @@ void ShadowMapper::CastShadows(Renderer* renderer)
             maxZ *= ZMULT;
         }
 
-        const Math::Matrix lightProjection = Math::Matrix::CreateOrthographic(maxX - minX, maxY - minY, minZ, maxZ);
+        //const Math::Matrix lightProjection = Math::Matrix::CreateOrthographic(maxX - minX, maxY - minY, minZ, maxZ);
+        const Math::Matrix lightProjection = Math::Matrix::CreateOrthographicOffCenter(minX, maxX, minY, maxY, minZ, maxZ);
         const Math::Matrix lightViewProj = lightView * lightProjection;
         cbGS.lightSpaceMatrices[i] = lightViewProj.Transpose();
 
@@ -368,9 +394,12 @@ void ShadowMapper::CastShadows(Renderer* renderer)
     //ID3D11RenderTargetView* nullRenderTargets[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = { nullptr };
     renderer->GetDeviceContext()->OMSetRenderTargets(0, nullptr, depthBuf);
 
+    context->RSSetState(cullFront);
     for (DrawComponent* comp : renderer->components) {
         comp->Draw(renderer, true);
     }
+    context->RSSetState(cullBack);
+
     context->GSSetShader(nullptr, nullptr, 0);
     renderer->GetDeviceContext()->OMSetRenderTargets(0, nullptr, nullptr);
     context->PSSetShaderResources(1, 1, &depthShaderRes);
