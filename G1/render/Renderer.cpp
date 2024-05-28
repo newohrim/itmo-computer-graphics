@@ -74,11 +74,13 @@ bool Renderer::Initialize(Window* _window)
 	res = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backTex);	// __uuidof(ID3D11Texture2D)
 	res = device->CreateRenderTargetView(backTex, nullptr, &rtv);
 
-	CD3D11_RASTERIZER_DESC rastDesc = {};
-	rastDesc.CullMode = D3D11_CULL_NONE;
-	rastDesc.FillMode = D3D11_FILL_SOLID;
+	{
+		CD3D11_RASTERIZER_DESC rastDesc = {};
+		rastDesc.CullMode = D3D11_CULL_FRONT;
+		rastDesc.FillMode = D3D11_FILL_SOLID;
 
-	res = device->CreateRasterizerState(&rastDesc, &rastState);
+		res = device->CreateRasterizerState(&rastDesc, &rastState);
+	}
 
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;

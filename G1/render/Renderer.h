@@ -13,6 +13,8 @@
 class Window;
 class Light;
 
+class CameraComponent; // TODO: TEMP G1
+
 struct ID3D11Device;
 struct ID3D11DeviceContext;
 struct IDXGISwapChain;
@@ -59,7 +61,9 @@ public:
 	IDXGISwapChain* GetSwapChain() const { return swapChain; }
 
 public:
-	bool isCastingShadows = false;
+	bool isCastingShadows = false; // wtf?
+	CameraComponent* activeCamera = nullptr; // TODO: TEMP G1
+	ID3D11RasterizerState* rastState = nullptr;
 
 private:
 	void AddComponent(DrawComponent* comp);
@@ -87,7 +91,6 @@ private:
 	ID3D11Device* device = nullptr;
 	ID3D11DeviceContext* context = nullptr;
 	IDXGISwapChain* swapChain = nullptr;
-	ID3D11RasterizerState* rastState = nullptr;
 	ID3D11RenderTargetView* rtv;
 	ID3D11SamplerState* samplerState;
 	ID3D11DepthStencilView* depthBuffer;

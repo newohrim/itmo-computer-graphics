@@ -42,7 +42,8 @@ cbuffer Cascades : register(b1)
 Texture2D worldPositionsTex : register(t0);
 Texture2D normalsTex : register(t1);
 Texture2D albedoSpecTex : register(t2);
-Texture2D depthStencilTex : register(t3);
+Texture2D lightAccTex : register(t3);
+//Texture2D depthStencilTex : register(t4);
 Texture2DArray shadowMap : register(t4);
 
 SamplerState samplerState : register(s0);
@@ -50,16 +51,16 @@ SamplerState samplerState : register(s0);
 float4 CalcPointLight(PointLight light, float3 texVal, float3 normal, float3 fragPos, float3 viewDir, float specPower)
 {
     float3 lightDir = normalize(light.position.xyz - fragPos);
-    // диффузное освещение
+    // ÃÂÃÂ´ÃÂÃÂ¸ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ·ÃÂÃÂ½ÃÂÃÂ¾ÃÂÃÂµ ÃÂÃÂ¾ÃÂÃÂÃÂÃÂ²ÃÂÃÂµÃÂÃÂÃÂÃÂµÃÂÃÂ½ÃÂÃÂ¸ÃÂÃÂµ
     float3 diff = max(dot(normal, lightDir), 0.0);
-    // освещение зеркальных бликов
+    // ÃÂÃÂ¾ÃÂÃÂÃÂÃÂ²ÃÂÃÂµÃÂÃÂÃÂÃÂµÃÂÃÂ½ÃÂÃÂ¸ÃÂÃÂµ ÃÂÃÂ·ÃÂÃÂµÃÂÃÂÃÂÃÂºÃÂÃÂ°ÃÂÃÂ»ÃÂÃÂÃÂÃÂ½ÃÂÃÂÃÂÃÂ ÃÂÃÂ±ÃÂÃÂ»ÃÂÃÂ¸ÃÂÃÂºÃÂÃÂ¾ÃÂÃÂ²
     float3 reflectDir = reflect(-lightDir, normal);
     float spec = specPower * pow(max(dot(viewDir, reflectDir), 0.0), uShininess);
-    // затухание
+    // ÃÂÃÂ·ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ°ÃÂÃÂ½ÃÂÃÂ¸ÃÂÃÂµ
     float distance = length(light.position.xyz - fragPos);
     float attenuation = 1.0 / (light.constant + light.lin * distance + 
   			     light.quadratic * (distance * distance));
-    // комбинируем результаты
+    // ÃÂÃÂºÃÂÃÂ¾ÃÂÃÂ¼ÃÂÃÂ±ÃÂÃÂ¸ÃÂÃÂ½ÃÂÃÂ¸ÃÂÃÂÃÂÃÂÃÂÃÂµÃÂÃÂ¼ ÃÂÃÂÃÂÃÂµÃÂÃÂ·ÃÂÃÂÃÂÃÂ»ÃÂÃÂÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂ
     float3 diffuse = light.diffuse.xyz * diff * texVal;
     float3 specular = light.specular.xyz * spec * texVal;
     diffuse  *= attenuation;
@@ -84,6 +85,7 @@ float4 PSMain( PS_IN input ) : SV_Target
 	float4 worldPos = worldPositionsTex.Sample(samplerState, pixPos);
 	float4 normal = normalsTex.Sample(samplerState, pixPos);
 	float4 albedoSpec = albedoSpecTex.Sample(samplerState, pixPos);
+	float4 lightAcc = lightAccTex.Sample(samplerState, pixPos);
 
 	// select cascade layer
 	float4 fragPosViewSpace = mul(float4(worldPos.xyz, 1.0), viewMatr);
@@ -173,20 +175,25 @@ float4 PSMain( PS_IN input ) : SV_Target
 	float NdotL = dot(N, L);
 	if (NdotL > 0)
 	{
-		float3 Diffuse = dirLight.mDiffuseColor.xyz * NdotL;
+		float3 Diffuse = 1.0f * dirLight.mDiffuseColor.xyz * NdotL;
 		float3 Specular = albedoSpec.w * dirLight.mSpecColor.xyz * pow(max(0.0, dot(R, V)), uShininess);
 		Phong += (1.0 - shadow) * (Diffuse + Specular);
 	}
 	
-	float4 col = float4(albedoSpec.xyz, 1.0f);
+	//float4 col = float4(albedoSpec.xyz, 1.0f);
+	//float4 col = lightAccTex.Sample(samplerState, pixPos);
+	float4 col = float4(albedoSpec.rgb, 1.0f);
 	
 	// Final color is texture color times phong light (alpha = 1)
 	col *= float4(Phong, 1.0f);
+	col += lightAcc;
+	//col += float4(lightAcc.rgb, 1.0f);
 
-	int spotLightsNumClipped = min(spotLightsNum, NR_POINT_LIGHTS);
-	for (int i = 0; i < spotLightsNum; i++) {
-		col += CalcPointLight(pointLights[i], float4(albedoSpec.xyz, 1.0f), N, worldPos.xyz, V, albedoSpec.w); 
-	}
+	//int spotLightsNumClipped = min(spotLightsNum, NR_POINT_LIGHTS);
+	//for (int i = 0; i < spotLightsNum; i++) {
+	//	col += CalcPointLight(pointLights[i], float4(albedoSpec.xyz, 1.0f), N, worldPos.xyz, V, albedoSpec.w); 
+	//}
+	//col += lightAccTex.Sample(samplerState, pixPos);
 
 	return col;
 }

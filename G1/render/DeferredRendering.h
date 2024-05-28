@@ -20,6 +20,7 @@ public:
 		WORLD_POS = 0,
 		NORMAL,
 		ALBEDO_SPEC,
+		LIGHT_ACC,
 		DEPTH_STENCIL,
 
 		_VIEW_IDX_NUM
@@ -73,6 +74,10 @@ public:
 			int spotLightsNum = 0;
 			Math::Vector2 _dummy;
 		};
+		struct LightIdx {
+			uint32_t lightIdx = 0;
+			Math::Vector3 _dummy;
+		};
 	};
 
 	DeferredRenderer(Renderer* renderer, ID3D11RenderTargetView* targetRtv);
@@ -81,13 +86,22 @@ public:
 
 protected:
 	void DrawGeometry(Renderer* renderer);
+	void DrawLightVolumes(Renderer* renderer);
 	void DrawLighting(Renderer* renderer);
 
 	GBuffer gBuffer;
 	ID3D11RenderTargetView* targetRtv;
-	struct ID3D11RasterizerState* rastState;
 	struct ID3D11SamplerState* samplerState;
 	struct ID3D11DepthStencilState* dsState;
 	std::shared_ptr<struct Shader> geomShader;
 	std::shared_ptr<struct Shader> lightShader;
+	std::shared_ptr<struct Shader> lightingVolumeShader;
+	struct ID3D11RasterizerState* rastState;
+	struct ID3D11RasterizerState* rastState1;
+	struct ID3D11DepthStencilState* dsState1;
+	struct ID3D11RasterizerState* rastState2;
+	struct ID3D11DepthStencilState* dsState2;
+	struct ID3D11DepthStencilState* dsState3;
+	struct ID3D11BlendState* blendState;
+	struct ID3D11Buffer* lightIdxBuf;
 };

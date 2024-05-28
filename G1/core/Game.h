@@ -35,7 +35,7 @@ public:
 	class CompositeComponent* GetCameraHolder();
 
 	CameraComponent* GetActiveCamera() const { return camera; }
-	void SetActiveCamera(CameraComponent* cam) { camera = cam; }
+	void SetActiveCamera(CameraComponent* cam) { camera = cam; renderer->activeCamera = cam; }
 
 	Renderer* GetRenderer() const { return renderer.get(); }
 
