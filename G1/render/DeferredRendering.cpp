@@ -554,61 +554,65 @@ void DeferredRenderer::DrawGeometry(Renderer* renderer)
 void DeferredRenderer::DrawLightVolumes(Renderer* renderer)
 {
     auto context = renderer->GetDeviceContext();
-    context->OMSetRenderTargets(0, nullptr, gBuffer.dsv);
-    context->OMSetDepthStencilState(dsState1, 1);
-    context->RSSetState(rastState1);
-    geomShader->Activate(context);
-    context->PSSetShader(nullptr, nullptr, 0);
-
-    auto sphereGeom = renderer->GetUtils()->GetSphereGeom(renderer);
-    sphereGeom->Activate(context);
+   
     {
         auto cbPS = LightingPass::CBPS{};
         renderer->PopulateLightsBuffer(cbPS); // TODO: TEMP E2
         
         for (int i = 0; i < cbPS.spotLightsNum; ++i) {
-            DeferredRenderer::GeometryPass::CBVS cbVS;
-            cbVS.worldTransform = (Math::Matrix::CreateScale(10.0f) * Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position))).Transpose();
-            //cbVS.worldTransform = Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position)).Transpose();
-            cbVS.viewProj = renderer->GetViewProjMatrix();
-            geomShader->SetCBVS(context, 0, &cbVS);
+            context->ClearDepthStencilView(gBuffer.dsv, D3D11_CLEAR_STENCIL, 1.0f, 1);
+            context->OMSetRenderTargets(0, nullptr, gBuffer.dsv);
+            context->OMSetDepthStencilState(dsState1, 1);
+            context->RSSetState(rastState1);
+            geomShader->Activate(context);
+            context->PSSetShader(nullptr, nullptr, 0);
+
+            auto sphereGeom = renderer->GetUtils()->GetSphereGeom(renderer);
+            sphereGeom->Activate(context);
+            {
+                DeferredRenderer::GeometryPass::CBVS cbVS;
+                cbVS.worldTransform = (Math::Matrix::CreateScale(10.0f) * Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position))).Transpose();
+                //cbVS.worldTransform = Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position)).Transpose();
+                cbVS.viewProj = renderer->GetViewProjMatrix();
+                geomShader->SetCBVS(context, 0, &cbVS);
+            }
+            context->DrawIndexed(sphereGeom->idxNum, 0, 0);
+
+            context->OMSetRenderTargets(1, &gBuffer.rtViews[GBuffer::VIEW_IDX::LIGHT_ACC], gBuffer.dsv);
+            context->OMSetDepthStencilState(dsState2, 1);
+            context->RSSetState(rastState2);
+            float blendFactor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+            context->OMSetBlendState(blendState, blendFactor, 0xffffffff);
+            lightingVolumeShader->Activate(context);
+            cbPS.viewMatr = renderer->GetViewMatrix().Transpose();
+            cbPS.uAmbientLight = Math::Color{ 0.2f, 0.2f, 0.2f };
+            ThirdPersonCamera* cam = static_cast<ThirdPersonCamera*>(renderer->activeCamera);
+            cbPS.uCameraPos = Math::Vector4(cam->GetCameraPos());
+            //renderer->PopulateLightsBuffer(cbPS); // TODO: TEMP E2
+            lightingVolumeShader->SetCBPS(context, 0, &cbPS);
+            context->PSSetConstantBuffers(2, 1, &lightIdxBuf);
+            context->PSSetShaderResources(0, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::WORLD_POS]);
+            context->PSSetShaderResources(1, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::NORMAL]);
+            context->PSSetShaderResources(2, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::ALBEDO_SPEC]);
+
+            sphereGeom->Activate(context);
+            {
+                DeferredRenderer::GeometryPass::CBVS cbVS;
+                cbVS.worldTransform = (Math::Matrix::CreateScale(10.0f) * Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position))).Transpose();
+                //cbVS.worldTransform = Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position)).Transpose();
+                cbVS.viewProj = renderer->GetViewProjMatrix();
+                lightingVolumeShader->SetCBVS(context, 0, &cbVS);
+            }
+            {
+                LightingPass::LightIdx lightIdx;
+                lightIdx.lightIdx = i;
+                D3D11_MAPPED_SUBRESOURCE subres;
+                context->Map(lightIdxBuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &subres);
+                memcpy(subres.pData, &lightIdx, sizeof(lightIdx));
+                context->Unmap(lightIdxBuf, 0);
+            }
             context->DrawIndexed(sphereGeom->idxNum, 0, 0);
         }
-    }
-    
-    context->OMSetRenderTargets(1, &gBuffer.rtViews[GBuffer::VIEW_IDX::LIGHT_ACC], gBuffer.dsv);
-    context->OMSetDepthStencilState(dsState2, 1);
-    context->RSSetState(rastState2);
-    float blendFactor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    context->OMSetBlendState(blendState, blendFactor, 0xffffffff);
-    lightingVolumeShader->Activate(context);
-    DeferredRenderer::LightingPass::CBPS cbPS;
-    cbPS.viewMatr = renderer->GetViewMatrix().Transpose();
-    cbPS.uAmbientLight = Math::Color{ 0.2f, 0.2f, 0.2f };
-    ThirdPersonCamera* cam = static_cast<ThirdPersonCamera*>(renderer->activeCamera);
-    cbPS.uCameraPos = Math::Vector4(cam->GetCameraPos());
-    renderer->PopulateLightsBuffer(cbPS); // TODO: TEMP E2
-    lightingVolumeShader->SetCBPS(context, 0, &cbPS);
-    context->PSSetConstantBuffers(2, 1, &lightIdxBuf);
-    context->PSSetShaderResources(0, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::WORLD_POS]);
-    context->PSSetShaderResources(1, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::NORMAL]);
-    context->PSSetShaderResources(2, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::ALBEDO_SPEC]);
-    sphereGeom->Activate(context);
-    for (int i = 0; i < cbPS.spotLightsNum; ++i) {
-        DeferredRenderer::GeometryPass::CBVS cbVS;
-        cbVS.worldTransform = (Math::Matrix::CreateScale(10.0f) * Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position))).Transpose();
-        //cbVS.worldTransform = Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position)).Transpose();
-        cbVS.viewProj = renderer->GetViewProjMatrix();
-        lightingVolumeShader->SetCBVS(context, 0, &cbVS);
-        {
-            LightingPass::LightIdx lightIdx;
-            lightIdx.lightIdx = i;
-            D3D11_MAPPED_SUBRESOURCE subres;
-            context->Map(lightIdxBuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &subres);
-            memcpy(subres.pData, &lightIdx, sizeof(lightIdx));
-            context->Unmap(lightIdxBuf, 0);
-        }
-        context->DrawIndexed(sphereGeom->idxNum, 0, 0);
     }
 }
 

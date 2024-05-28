@@ -135,7 +135,7 @@ void Game::LoadData()
 		mesh->SetColor(Math::Color{1.0f, 0.0f, 0.0f});
 		PointLightComponent* pointLight = new PointLightComponent(this, pointLightC);
 		pointLight->GetLightSource().SetColor(Math::Color{1.0f, 0.0f, 0.0f});
-		pointLight->GetLightSource().SetIntensity(25.0f);
+		pointLight->GetLightSource().SetIntensity(5.0f);
 		OrbiterComponent* orbiter = new OrbiterComponent(this, pointLightC, Math::Vector3{0.0f, 0.0f, 2.5f}, 10.0f, -1.0f);
 		orbiter->SetMoveSpeed(1.0f);
 		pointLightC->SetScale(Math::Vector3{0.2f});
@@ -147,7 +147,7 @@ void Game::LoadData()
 		mesh->SetColor(Math::Color{0.0f, 1.0f, 0.0f});
 		PointLightComponent* pointLight = new PointLightComponent(this, pointLightC);
 		pointLight->GetLightSource().SetColor(Math::Color{0.0f, 1.0f, 0.0f});
-		pointLight->GetLightSource().SetIntensity(25.0f);
+		pointLight->GetLightSource().SetIntensity(5.0f);
 		OrbiterComponent* orbiter = new OrbiterComponent(this, pointLightC, Math::Vector3{0.0f, 0.0f, 2.5f}, 10.0f, -1.0f);
 		orbiter->SetMoveSpeed(1.0f);
 		pointLightC->SetScale(Math::Vector3{0.2f});
@@ -159,7 +159,7 @@ void Game::LoadData()
 		mesh->SetColor(Math::Color{0.0f, 0.0f, 1.0f});
 		PointLightComponent* pointLight = new PointLightComponent(this, pointLightC);
 		pointLight->GetLightSource().SetColor(Math::Color{0.0f, 0.0f, 1.0f});
-		pointLight->GetLightSource().SetIntensity(25.0f);
+		pointLight->GetLightSource().SetIntensity(5.0f);
 		OrbiterComponent* orbiter = new OrbiterComponent(this, pointLightC, Math::Vector3{0.0f, 0.0f, 2.5f}, 10.0f, -1.0f);
 		orbiter->SetMoveSpeed(1.0f);
 		pointLightC->SetScale(Math::Vector3{0.2f});
