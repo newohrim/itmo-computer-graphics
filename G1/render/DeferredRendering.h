@@ -17,8 +17,7 @@ public:
 
 public:
 	enum VIEW_IDX {
-		WORLD_POS = 0,
-		NORMAL,
+		NORMAL = 0,
 		ALBEDO_SPEC,
 		LIGHT_ACC,
 		DEPTH_STENCIL,
@@ -28,6 +27,8 @@ public:
 	std::vector<ID3D11RenderTargetView*> rtViews;
 	std::vector<ID3D11ShaderResourceView*> srViews;
 	struct ID3D11DepthStencilView* dsv;
+	struct ID3D11DepthStencilView* dsvCopy;
+	struct ID3D11ShaderResourceView* srvCopy;
 };
 
 class DeferredRenderer {
@@ -78,6 +79,11 @@ public:
 			uint32_t lightIdx = 0;
 			Math::Vector3 _dummy;
 		};
+		struct InversedProj {
+			Math::Matrix InverseProjection;
+			Math::Vector2 ScreenDimensions;
+			Math::Vector2 _dummy;
+		};
 	};
 
 	DeferredRenderer(Renderer* renderer, ID3D11RenderTargetView* targetRtv);
@@ -104,4 +110,5 @@ protected:
 	struct ID3D11DepthStencilState* dsState3;
 	struct ID3D11BlendState* blendState;
 	struct ID3D11Buffer* lightIdxBuf;
+	struct ID3D11Buffer* inversedProjBuf;
 };

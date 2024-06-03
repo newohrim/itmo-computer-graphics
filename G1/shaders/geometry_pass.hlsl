@@ -15,10 +15,9 @@ struct PS_IN
 
 struct PS_OUTPUT
 {
-    float3 position: SV_Target0;
-    float3 normal: SV_Target1;
-    float4 albedoSpec: SV_Target2;
-    float4 lightAcc: SV_Target3;
+    float3 normal: SV_Target0;
+    float4 albedoSpec: SV_Target1;
+    float4 lightAcc: SV_Target2;
 };
 
 cbuffer VertexConstantBuffer : register(b0)
@@ -59,7 +58,6 @@ PS_OUTPUT PSMain( PS_IN input ) : SV_Target
 	// Vector from surface to camera
 	float3 V = normalize(uCameraPos.xyz - input.worldPos.xyz);
 
-    output.position = input.worldPos.xyz;
     output.normal = N;
     output.albedoSpec = isTextureSet * tex.Sample(samplerState, input.uv) + !isTextureSet * float4(color.xyz, 0.0);
     output.albedoSpec.a = uSpecPower;

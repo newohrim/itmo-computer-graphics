@@ -37,13 +37,42 @@ cbuffer PixelConstantBuffer : register(b0)
 cbuffer Cascades : register(b1) 
 {
 	float4x4 lightSpaceMatrices[NR_CASCADES];
+	float4x4 inverseViewMatr;
 }
 
-Texture2D worldPositionsTex : register(t0);
-Texture2D normalsTex : register(t1);
-Texture2D albedoSpecTex : register(t2);
-Texture2D lightAccTex : register(t3);
-//Texture2D depthStencilTex : register(t4);
+cbuffer ScreenToViewParams : register(b3)
+{
+    float4x4 InverseProjection;
+    float2 ScreenDimensions;
+}
+
+// Convert clip space coordinates to view space
+float4 ClipToView( float4 clip )
+{
+    // View space position.
+    float4 view = mul( clip, InverseProjection );
+    // Perspective projection.
+    view = view / view.w;
+ 
+    return view;
+}
+ 
+// Convert screen space coordinates to view space.
+float4 ScreenToView( float4 screen )
+{
+    // Convert to normalized texture coordinates
+    float2 texCoord = screen.xy / ScreenDimensions;
+ 
+    // Convert to clip space
+    float4 clip = float4( float2( texCoord.x, 1.0f - texCoord.y ) * 2.0f - 1.0f, screen.z, screen.w );
+ 
+    return ClipToView( clip );
+}
+
+Texture2D normalsTex : register(t0);
+Texture2D albedoSpecTex : register(t1);
+Texture2D lightAccTex : register(t2);
+Texture2D depthStencilTex : register(t3);
 Texture2DArray shadowMap : register(t4);
 
 SamplerState samplerState : register(s0);
@@ -80,9 +109,19 @@ PS_IN VSMain( uint id: SV_VERTEXID )
 
 float4 PSMain( PS_IN input ) : SV_Target
 {
-	float3 pixPos = float3(input.uv, 0);
+	// Everything is in view space.
+    float4 eyePos = { 0, 0, 0, 1 };
+ 
+    int2 texCoord = input.pos.xy;
+    float depth = depthStencilTex.Load( int3( texCoord, 0 ) ).r;
+ 
+	// point in view space
+    float4 P = ScreenToView( float4( texCoord, depth, 1.0f ) );
 	//float4 worldPos = worldPositionsTex.Load(pixPos);
-	float4 worldPos = worldPositionsTex.Sample(samplerState, pixPos);
+	//float4 worldPos = worldPositionsTex.Sample(samplerState, pixPos);
+	//float4 worldPos = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	float4 worldPos = mul(P, inverseViewMatr);
+	float3 pixPos = float3(input.uv, 0);
 	float4 normal = normalsTex.Sample(samplerState, pixPos);
 	float4 albedoSpec = albedoSpecTex.Sample(samplerState, pixPos);
 	float4 lightAcc = lightAccTex.Sample(samplerState, pixPos);

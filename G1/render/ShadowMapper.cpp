@@ -290,6 +290,7 @@ void ShadowMapper::CastShadows(Renderer* renderer)
 {
     CBVS cbVS;
     CBGS cbGS;
+    cbGS.inverseViewMatr = renderer->GetViewMatrix().Invert().Transpose();
 
     const float step = (FAR_PLANE - NEAR_PLANE) * (1.0f / CASCADES_COUNT);
     Math::Vector3 ldNorm = LIGHT_DIR;
@@ -343,7 +344,6 @@ void ShadowMapper::CastShadows(Renderer* renderer)
         const Math::Matrix lightProjection = Math::Matrix::CreateOrthographicOffCenter(minX, maxX, minY, maxY, minZ, maxZ);
         const Math::Matrix lightViewProj = lightView * lightProjection;
         cbGS.lightSpaceMatrices[i] = lightViewProj.Transpose();
-
         /*std::cout << "{\n";
         for (const auto& v : corners) {
             const auto v3 = Math::Vector3(v);

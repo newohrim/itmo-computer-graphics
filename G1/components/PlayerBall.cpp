@@ -25,7 +25,7 @@ void PlayerBall::Initialize(Compositer* parent)
 
 	PointLightComponent* pointLight = new PointLightComponent(GetGame(), this);
 	pointLight->GetLightSource().SetColor(Math::Color{1.0f, 0.9f, 0.5f});
-	pointLight->GetLightSource().SetIntensity(10.0f);
+	pointLight->GetLightSource().SetIntensity(5.0f);
 
 	Renderer* renderer = GetGame()->GetRenderer();
 	meshSocket = new CompositeComponent(GetGame(), this);

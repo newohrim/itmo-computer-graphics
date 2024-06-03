@@ -55,24 +55,53 @@ cbuffer LightIndexBuffer : register(b2)
     uint lightIdx;
 }
 
-Texture2D worldPositionsTex : register(t0);
-Texture2D normalsTex : register(t1);
-Texture2D albedoSpecTex : register(t2);
-Texture2D depthStencilTex : register(t3);
+cbuffer ScreenToViewParams : register(b3)
+{
+    float4x4 InverseProjection;
+    float2 ScreenDimensions;
+}
+
+// Convert clip space coordinates to view space
+float4 ClipToView( float4 clip )
+{
+    // View space position.
+    float4 view = mul( clip, InverseProjection );
+    // Perspective projection.
+    view = view / view.w;
+ 
+    return view;
+}
+ 
+// Convert screen space coordinates to view space.
+float4 ScreenToView( float4 screen )
+{
+    // Convert to normalized texture coordinates
+    float2 texCoord = screen.xy / ScreenDimensions;
+ 
+    // Convert to clip space
+    float4 clip = float4( float2( texCoord.x, 1.0f - texCoord.y ) * 2.0f - 1.0f, screen.z, screen.w );
+ 
+    return ClipToView( clip );
+}
+
+Texture2D normalsTex : register(t0);
+Texture2D albedoSpecTex : register(t1);
+Texture2D depthStencilTex : register(t2);
 Texture2DArray shadowMap : register(t4);
 
 SamplerState samplerState : register(s0);
 
 float4 CalcPointLight(PointLight light, float3 texVal, float3 normal, float3 fragPos, float3 viewDir, float specPower)
 {
-    float3 lightDir = normalize(light.position.xyz - fragPos);
+	float4 lightPosViewSpace = mul(float4(light.position.xyz, 1.0f), viewMatr);
+    float3 lightDir = normalize(lightPosViewSpace.xyz - fragPos);
     // диффузное освещение
     float3 diff = max(dot(normal, lightDir), 0.0);
     // освещение зеркальных бликов
     float3 reflectDir = reflect(-lightDir, normal);
     float spec = specPower * pow(max(dot(viewDir, reflectDir), 0.0), uShininess);
     // затухание
-    float distance = length(light.position.xyz - fragPos);
+    float distance = length(lightPosViewSpace.xyz - fragPos);
     float attenuation = 1.0 / (light.constant + light.lin * distance + 
   			     light.quadratic * (distance * distance));
     // комбинируем результаты
@@ -97,9 +126,22 @@ PS_IN VSMain( VS_IN input )
 
 float4 PSMain( PS_IN input ) : SV_Target
 {
+	// Everything is in view space.
+    float4 eyePos = { 0, 0, 0, 1 };
+ 
+    int2 texCoord = input.pos.xy;
+    float depth = depthStencilTex.Load( int3( texCoord, 0 ) ).r;
+ 
+	// point in view space
+    float4 P = ScreenToView( float4( texCoord, depth, 1.0f ) );
+	//float x = worldPos.x;
+	//float y = worldPos.y;
+	//float z = worldPos.z + 10.0f;
+	//worldPos = float4(-x, -z, y, 1.0f);
+
 	float3 pixPos = float3((input.pos / 800.0f).xy, 0);
 	//float4 worldPos = worldPositionsTex.Load(pixPos);
-	float4 worldPos = worldPositionsTex.Sample(samplerState, pixPos);
+	//float4 worldPos = //worldPositionsTex.Sample(samplerState, pixPos);
 	float4 normal = normalsTex.Sample(samplerState, pixPos);
 	float4 albedoSpec = albedoSpecTex.Sample(samplerState, pixPos);
 
@@ -108,7 +150,7 @@ float4 PSMain( PS_IN input ) : SV_Target
 	// Vector from surface to light
 	float3 L = normalize(-dirLight.mDirection.xyz);
 	// Vector from surface to camera
-	float3 V = normalize(uCameraPos.xyz - worldPos.xyz);
+	float3 V = normalize(eyePos.xyz - P.xyz);
 	// Reflection of -L about N
 	float3 R = normalize(reflect(-L, N));
 
@@ -127,7 +169,7 @@ float4 PSMain( PS_IN input ) : SV_Target
 	// Final color is texture color times phong light (alpha = 1)
 	//col *= float4(Phong, 1.0f);
 
-	return CalcPointLight(pointLights[lightIdx], float4(albedoSpec.xyz, 1.0f), N, worldPos.xyz, V, albedoSpec.w); 
+	return CalcPointLight(pointLights[lightIdx], float4(albedoSpec.xyz, 1.0f), N, P.xyz, V, albedoSpec.w); 
 
 	//return col;
 }

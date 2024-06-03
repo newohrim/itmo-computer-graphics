@@ -30,43 +30,6 @@ GBuffer::GBuffer(Renderer* renderer)
     rtViews.resize(_VIEW_IDX_NUM, nullptr);
     srViews.resize(_VIEW_IDX_NUM, nullptr);
 
-    {   // WORLD_POSITION
-        D3D11_TEXTURE2D_DESC texDesc = {};
-        texDesc.Width = viewportWidth;
-        texDesc.Height = viewportHeight;
-        texDesc.MipLevels = 1;
-        texDesc.Format = DXGI_FORMAT_R32G32B32A32_TYPELESS;
-        texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-        texDesc.SampleDesc.Count = 1;
-        texDesc.SampleDesc.Quality = 0;
-        texDesc.ArraySize = 1;
-
-        ID3D11Texture2D* tex;
-        if (FAILED(device->CreateTexture2D(&texDesc, NULL, &tex))) {
-            assert(false);
-            return;
-        }
-
-        D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-        rtvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-        rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-        if (FAILED(device->CreateRenderTargetView(tex, &rtvDesc, &rtViews[WORLD_POS]))) {
-            assert(false);
-            return;
-        }
-
-        D3D11_SHADER_RESOURCE_VIEW_DESC srtDesc = {};
-        srtDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-        srtDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        srtDesc.Texture2D.MipLevels = 1;
-        if (FAILED(device->CreateShaderResourceView(tex, &srtDesc, &srViews[WORLD_POS]))) {
-            assert(false);
-            return;
-        }
-
-        tex->Release();
-    }
-
     {   // NORMAL
         D3D11_TEXTURE2D_DESC texDesc = {};
         texDesc.Width = viewportWidth;
@@ -212,6 +175,47 @@ GBuffer::GBuffer(Renderer* renderer)
         srvDesc.Texture2D.MipLevels = 1;
         srvDesc.Texture2D.MostDetailedMip = 0;
         if (FAILED(device->CreateShaderResourceView(tex, &srvDesc, &srViews[DEPTH_STENCIL]))) {
+            assert(false);
+            return;
+        }
+
+        tex->Release();
+    }
+
+    {   // DEPTH_STENCIL COPY
+        D3D11_TEXTURE2D_DESC texDesc = {};
+        ZeroMemory(&texDesc, sizeof(texDesc));
+        texDesc.Width = viewportWidth;
+        texDesc.Height = viewportHeight;
+        texDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+        texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+        texDesc.SampleDesc.Count = 1;
+        texDesc.SampleDesc.Quality = 0;
+        texDesc.ArraySize = 1;
+        texDesc.MipLevels = 1;
+
+        ID3D11Texture2D* tex;
+        if (FAILED(renderer->GetDevice()->CreateTexture2D(&texDesc, NULL, &tex))) {
+            assert(false);
+            return;
+        }
+
+        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+        ZeroMemory(&dsvDesc, sizeof(dsvDesc));
+        dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        if (FAILED(device->CreateDepthStencilView(tex, &dsvDesc, &dsvCopy))) {
+            assert(false);
+            return;
+        }
+
+        D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+        ZeroMemory(&srvDesc, sizeof(srvDesc));
+        srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+        srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MipLevels = 1;
+        srvDesc.Texture2D.MostDetailedMip = 0;
+        if (FAILED(device->CreateShaderResourceView(tex, &srvDesc, &srvCopy))) {
             assert(false);
             return;
         }
@@ -526,6 +530,16 @@ DeferredRenderer::DeferredRenderer(Renderer* renderer, ID3D11RenderTargetView* _
             0,							// UINT StructureByteStride;
         };
         renderer->GetDevice()->CreateBuffer(&lightIdxDesc, nullptr, &lightIdxBuf);
+
+        const D3D11_BUFFER_DESC inversedProjDesc{
+            sizeof(LightingPass::InversedProj),	// UINT ByteWidth;
+            D3D11_USAGE_DYNAMIC,		// D3D11_USAGE Usage;
+            D3D11_BIND_CONSTANT_BUFFER, // UINT BindFlags;
+            D3D11_CPU_ACCESS_WRITE,		// UINT CPUAccessFlags;
+            0,							// UINT MiscFlags;
+            0,							// UINT StructureByteStride;
+        };
+        renderer->GetDevice()->CreateBuffer(&inversedProjDesc, nullptr, &inversedProjBuf);
     }
 }
 
@@ -554,6 +568,10 @@ void DeferredRenderer::DrawGeometry(Renderer* renderer)
 void DeferredRenderer::DrawLightVolumes(Renderer* renderer)
 {
     auto context = renderer->GetDeviceContext();
+
+    CameraParamsPerspective camParams;
+    camParams.aspectRatio = (float)renderer->GetWindow()->GetWidth() / renderer->GetWindow()->GetHeigth();
+    const Math::Matrix iversedProjMatr = camParams.MakeProjectionMatrix().Invert().Transpose();
    
     {
         auto cbPS = LightingPass::CBPS{};
@@ -571,10 +589,12 @@ void DeferredRenderer::DrawLightVolumes(Renderer* renderer)
             sphereGeom->Activate(context);
             {
                 DeferredRenderer::GeometryPass::CBVS cbVS;
-                cbVS.worldTransform = (Math::Matrix::CreateScale(10.0f) * Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position))).Transpose();
+                cbVS.worldTransform = (Math::Matrix::CreateScale(25.0f) * Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position))).Transpose();
                 //cbVS.worldTransform = Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position)).Transpose();
+                //cbVS.viewProj = renderer->GetViewProjMatrix();
                 cbVS.viewProj = renderer->GetViewProjMatrix();
                 geomShader->SetCBVS(context, 0, &cbVS);
+                
             }
             context->DrawIndexed(sphereGeom->idxNum, 0, 0);
 
@@ -591,14 +611,21 @@ void DeferredRenderer::DrawLightVolumes(Renderer* renderer)
             //renderer->PopulateLightsBuffer(cbPS); // TODO: TEMP E2
             lightingVolumeShader->SetCBPS(context, 0, &cbPS);
             context->PSSetConstantBuffers(2, 1, &lightIdxBuf);
-            context->PSSetShaderResources(0, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::WORLD_POS]);
-            context->PSSetShaderResources(1, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::NORMAL]);
-            context->PSSetShaderResources(2, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::ALBEDO_SPEC]);
+            context->PSSetConstantBuffers(3, 1, &inversedProjBuf);
+            context->PSSetShaderResources(0, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::NORMAL]);
+            context->PSSetShaderResources(1, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::ALBEDO_SPEC]);
+            ID3D11Resource* res1;
+            gBuffer.srvCopy->GetResource(&res1);
+            ID3D11Resource* res2;
+            gBuffer.dsv->GetResource(&res2);
+            context->CopyResource(res1, res2);
+
+            context->PSSetShaderResources(2, 1, &gBuffer.srvCopy);
 
             sphereGeom->Activate(context);
             {
                 DeferredRenderer::GeometryPass::CBVS cbVS;
-                cbVS.worldTransform = (Math::Matrix::CreateScale(10.0f) * Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position))).Transpose();
+                cbVS.worldTransform = (Math::Matrix::CreateScale(25.0f) * Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position))).Transpose();
                 //cbVS.worldTransform = Math::Matrix::CreateTranslation(Math::Vector3(cbPS.pointLights[i].position)).Transpose();
                 cbVS.viewProj = renderer->GetViewProjMatrix();
                 lightingVolumeShader->SetCBVS(context, 0, &cbVS);
@@ -610,6 +637,16 @@ void DeferredRenderer::DrawLightVolumes(Renderer* renderer)
                 context->Map(lightIdxBuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &subres);
                 memcpy(subres.pData, &lightIdx, sizeof(lightIdx));
                 context->Unmap(lightIdxBuf, 0);
+            }
+            {
+                LightingPass::InversedProj inversedProj;
+                //inversedProj.InverseProjection = cam->GetProjectionMatrix().Invert(); // cam inversed proj
+                inversedProj.InverseProjection = iversedProjMatr; // cam inversed proj
+                inversedProj.ScreenDimensions = Math::Vector2{800.0f, 800.0f}; // cam inversed proj
+                D3D11_MAPPED_SUBRESOURCE subres;
+                context->Map(inversedProjBuf, 0, D3D11_MAP_WRITE_DISCARD, 0, &subres);
+                memcpy(subres.pData, &inversedProj, sizeof(inversedProj));
+                context->Unmap(inversedProjBuf, 0);
             }
             context->DrawIndexed(sphereGeom->idxNum, 0, 0);
         }
@@ -640,11 +677,10 @@ void DeferredRenderer::DrawLighting(Renderer* renderer)
     lightShader->SetCBPS(context, 0, &cbPS);
     context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
     context->IASetVertexBuffers(0, 0, NULL, NULL, NULL);
-    context->PSSetShaderResources(0, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::WORLD_POS]);
-    context->PSSetShaderResources(1, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::NORMAL]);
-    context->PSSetShaderResources(2, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::ALBEDO_SPEC]);
-    context->PSSetShaderResources(3, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::LIGHT_ACC]);
-    //context->PSSetShaderResources(3, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::DEPTH_STENCIL]);
+    context->PSSetShaderResources(0, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::NORMAL]);
+    context->PSSetShaderResources(1, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::ALBEDO_SPEC]);
+    context->PSSetShaderResources(2, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::LIGHT_ACC]);
+    context->PSSetShaderResources(3, 1, &gBuffer.srViews[GBuffer::VIEW_IDX::DEPTH_STENCIL]);
     context->Draw(4, 0);
     context->OMSetRenderTargets(0, nullptr, nullptr);
     context->OMSetDepthStencilState(nullptr, 0);

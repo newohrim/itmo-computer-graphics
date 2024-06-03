@@ -22,6 +22,7 @@ protected:
 	};
 	struct CBGS {
 		Math::Matrix lightSpaceMatrices[CASCADES_COUNT];
+		Math::Matrix inverseViewMatr;
 	};
 
 	struct ID3D11InputLayout* layout;
