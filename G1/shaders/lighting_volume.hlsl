@@ -95,6 +95,7 @@ float4 CalcPointLight(PointLight light, float3 texVal, float3 normal, float3 fra
 {
 	float4 lightPosViewSpace = mul(float4(light.position.xyz, 1.0f), viewMatr);
     float3 lightDir = normalize(lightPosViewSpace.xyz - fragPos);
+	normal = mul(float4(normal, 0.0f), viewMatr).xyz;
     // диффузное освещение
     float3 diff = max(dot(normal, lightDir), 0.0);
     // освещение зеркальных бликов
